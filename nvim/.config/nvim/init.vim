@@ -84,9 +84,13 @@ lua require("npx")
 colorscheme gruvbox
 " use ' as leader
 let mapleader = " "
+nnoremap <Space> <Nop>
 " type 'ctrl+c' instead of ESC
 inoremap <C-c> <Esc>
 inoremap <Esc> <Nop>
+" move to beginning and end of line
+nnoremap <leader>h ^
+nnoremap <leader>l $
 " use ctrl+hjkl to move between split/vsplit panels
 tnoremap <C-h> <C-\><C-n><C-w>h
 tnoremap <C-j> <C-\><C-n><C-w>j
