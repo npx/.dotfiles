@@ -39,7 +39,7 @@ cmd + ctrl - l : yabai -m window --display 1;\
 cmd + ctrl - x : yabai -m space --rotate 90
 
 # open iTerm2 .
-cmd + ctrl - 0x2F : open -a "/Applications/iTerm.app"
+cmd + ctrl - 0x2F : open -n "/Applications/Alacritty.app"
 
 # focus display
 cmd + ctrl - d : yabai -m display --focus recent
