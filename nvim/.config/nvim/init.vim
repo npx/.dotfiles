@@ -74,6 +74,10 @@ call plug#begin('~/.vim/plugged')
     Plug 'hrsh7th/cmp-vsnip'
     Plug 'hrsh7th/vim-vsnip'   
 
+    " Git
+    Plug 'tpope/vim-fugitive'
+    Plug 'junegunn/gv.vim'
+
     " Misc
     Plug 'junegunn/goyo.vim'
     Plug 'preservim/nerdcommenter'
