@@ -78,6 +78,9 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-fugitive'
     Plug 'junegunn/gv.vim'
 
+    " Formatting
+    Plug 'sbdchd/neoformat'
+
     " Misc
     Plug 'junegunn/goyo.vim'
     Plug 'preservim/nerdcommenter'
@@ -121,3 +124,9 @@ nnoremap <leader>Y gg"+yG
 " deleting to black hole register
 nnoremap <leader>d "_d
 vnoremap <leader>d "_d
+" Try node_module formatters and autoformat on save
+let g:neoformat_try_node_exe = 1
+augroup fmt
+  autocmd!
+  autocmd BufWritePre * undojoin | Neoformat
+augroup END
