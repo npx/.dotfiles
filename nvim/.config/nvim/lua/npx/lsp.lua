@@ -38,7 +38,7 @@ cmp.setup({
         -- For ultisnips user.
         -- { name = 'ultisnips' },
 
-        { name = 'buffer' },
+        { name = 'buffer', keyword_length = 5 },
     }
 })
 
