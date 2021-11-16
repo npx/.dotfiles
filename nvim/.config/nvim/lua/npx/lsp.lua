@@ -46,7 +46,13 @@ cmp.setup({
 require'lspconfig'.tsserver.setup{
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 }
-
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    virtual_text = false,
+    underline = true,
+    signs = true,
+  }
+)
 -- Configure Omnisharp LSP
 local pid = vim.fn.getpid()
 local omnisharp_bin = "/Users/ybaron/omnisharp/run"
