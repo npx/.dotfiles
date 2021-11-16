@@ -84,6 +84,9 @@ call plug#begin('~/.vim/plugged')
     " Misc
     Plug 'junegunn/goyo.vim'
     Plug 'preservim/nerdcommenter'
+
+    " Angular
+    Plug 'softoika/ngswitcher.vim'
 call plug#end()
 " load lua modules
 lua require("npx")
