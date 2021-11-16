@@ -1,5 +1,7 @@
 font:
-  size: 16
+  size: 18
   offset:
     x: 1
-    y: 3
+    y: 5
+key_bindings:
+  - { key: N, mods: Control|Shift, action: SpawnNewInstance }
