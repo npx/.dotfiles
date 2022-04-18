@@ -84,13 +84,16 @@ call plug#begin('~/.vim/plugged')
 
     " Misc
     Plug 'junegunn/goyo.vim'
-    Plug 'preservim/nerdcommenter'
+    Plug 'tpope/vim-surround'
+    Plug 'numToStr/Comment.nvim'
 
     " Angular
     Plug 'softoika/ngswitcher.vim'
 call plug#end()
 " load lua modules
 lua require("npx")
+" setup comment plugin bindings 
+lua require('Comment').setup()
 " set theme
 colorscheme gruvbox
 " use ' as leader
