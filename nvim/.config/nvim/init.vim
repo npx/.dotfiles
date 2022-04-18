@@ -53,12 +53,12 @@ call plug#begin('~/.vim/plugged')
     " Treesitter
     Plug 'nvim-treesitter/nvim-treesitter'
 
+    " Telescope
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'nvim-telescope/telescope.nvim'
+
     " Color Theme
     Plug 'gruvbox-community/gruvbox'
-
-    " Fuzzy finder
-    Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-    Plug 'junegunn/fzf.vim'
 
     " Automatically set tabwitch
     Plug 'tpope/vim-sleuth'

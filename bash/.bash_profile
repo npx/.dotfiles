@@ -1,4 +1,5 @@
 export WDSM_NPM_TOKEN="unknown"
+export DOTFILES="$HOME/.dotfiles"
 
 # PATH
 PATH="${PATH}:/usr/local/sbin"
