@@ -7,49 +7,49 @@
 # ctrl + cmd - 1  : yabai -m window --display 1; yabai -m display --focus 1
 
 # toggle window zoom
-cmd + ctrl - return : yabai -m window --toggle zoom-fullscreen
+ctrl + shift + alt - v: yabai -m window --toggle zoom-fullscreen
 
 # float / unfloat window and center on screen
-cmd + ctrl - f : yabai -m window --toggle float;\
-                 yabai -m window --grid 4:4:1:1:2:2
-cmd + ctrl - c : yabai -m window --grid 8:8:1:0:6:8
+ctrl + shift + alt - f : yabai -m window --toggle float;\
+                         yabai -m window --grid 4:4:1:1:2:2
+ctrl + shift + alt - c : yabai -m window --grid 8:8:1:0:6:8
                  
 
 # move window on space
-cmd + ctrl - e : yabai -m window --swap prev
-cmd + ctrl - r : yabai -m window --swap next
+ctrl + shift + alt - e : yabai -m window --swap prev
+ctrl + shift + alt - r : yabai -m window --swap next
 
 # focus window []
-cmd + ctrl - j : yabai -m window --focus prev
-cmd + ctrl - k : yabai -m window --focus next
+ctrl + shift + alt - j : yabai -m window --focus prev
+ctrl + shift + alt - k : yabai -m window --focus next
 
 # move window between spaces
-cmd + ctrl - u : yabai -m window --space prev;\
-                    yabai -m space --focus prev;
-cmd + ctrl - i : yabai -m window --space next;\
-                     yabai -m space --focus next 
+ctrl + shift + alt - u : yabai -m window --space prev;\
+                         yabai -m space --focus prev;
+ctrl + shift + alt - i : yabai -m window --space next;\
+                         yabai -m space --focus next 
 
 # move window between side and main
-cmd + ctrl - h : yabai -m window --display 2;\
-                 yabai -m display --focus 2
-cmd + ctrl - l : yabai -m window --display 1;\
-                 yabai -m display --focus 1
+ctrl + shift + alt - h : yabai -m window --display 2;\
+                         yabai -m display --focus 2
+ctrl + shift + alt - l : yabai -m window --display 1;\
+                         yabai -m display --focus 1
 
 # mirror/rotate space
-cmd + ctrl - x : yabai -m space --rotate 90
+ctrl + shift + alt - x : yabai -m space --rotate 90
 
 # open iTerm2 .
-cmd + ctrl - 0x2F : open -n "/Applications/Alacritty.app"
+ctrl + shift + alt - 0x2F : open -n "/Applications/Alacritty.app"
 
 # focus display
-cmd + ctrl - d : yabai -m display --focus recent
+ctrl + shift + alt - d : yabai -m display --focus recent
 
 # move space (from side to main)
-cmd + ctrl - 1 : yabai -m display --focus 2;\
-                 yabai -m space --display 1;\
-                 yabai -m space --rotate 90
+ctrl + shift + alt - 1 : yabai -m display --focus 2;\
+                         yabai -m space --display 1;\
+                         yabai -m space --rotate 90
 
 # move space (from main to side)
-cmd + ctrl - 2 : yabai -m space --display 2;\
-                 yabai -m space --rotate 270
+ctrl + shift + alt - 2 : yabai -m space --display 2;\
+                         yabai -m space --rotate 270
 
