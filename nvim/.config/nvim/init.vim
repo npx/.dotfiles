@@ -89,6 +89,16 @@ call plug#begin('~/.vim/plugged')
 
     " Angular
     Plug 'softoika/ngswitcher.vim'
+    
+    " TypeScript
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'jose-elias-alvarez/nvim-lsp-ts-utils'
+
+    " Lit
+    Plug 'jonsmithers/vim-html-template-literals'
+
+    " HTML
+    Plug 'alvan/vim-closetag'
 call plug#end()
 " load lua modules
 lua require("npx")
@@ -137,3 +147,5 @@ augroup fmt
   autocmd!
   autocmd BufWritePre * undojoin | Neoformat
 augroup END
+" configure template vim-html-template-literals
+let g:htl_css_templates = 1
