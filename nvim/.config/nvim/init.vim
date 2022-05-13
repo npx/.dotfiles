@@ -34,7 +34,7 @@ set nobackup
 set scrolloff=8
 set sidescrolloff=8
 " rulers
-set colorcolumn=100
+set colorcolumn=80,100
 " keep a side column for addons
 set signcolumn=yes
 " more space for displaying messages
@@ -135,6 +135,8 @@ nnoremap <leader>Y gg"+yG
 " deleting to black hole register
 nnoremap <leader>d "_d
 vnoremap <leader>d "_d
+" inserting between brackets in new line
+nnoremap <leader><Space> i<CR><Esc>O
 " Try node_module formatters and autoformat on save
 let g:neoformat_try_node_exe = 1
 augroup fmt

@@ -5,7 +5,21 @@ local action_state = require("telescope.actions.state")
 local conf = require("telescope.config").values
 local actions = require("telescope.actions")
 
+require('telescope').setup{
+  defaults = {
+    file_ignore_patterns = { "%.mat", "%.meta", "%.asset", "%.prefab", "%.shader", "%.cginc", "%.asmdef", "%.unity" }
+  }
+}
+
 local M = {}
+
+M.project_files = function()
+  local opts = {
+	  -- git_command = { "git", "ls-files", "--exclude-standard" } 
+  }
+  local ok = pcall(require"telescope.builtin".git_files, opts)
+  if not ok then require"telescope.builtin".find_files(opts) end
+end
 
 M.search_dotfiles = function()
 	require("telescope.builtin").git_files({
