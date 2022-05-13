@@ -5,3 +5,10 @@ font:
     y: 5
 key_bindings:
   - { key: N, mods: Control|Shift, action: SpawnNewInstance }
+  - { key: Key6, mods: Control, chars: "\x1e" }
+window:
+  decorations: none
+  padding:
+    x: 5
+    y: 5
+  startup_mode: Maximized
