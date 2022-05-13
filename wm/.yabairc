@@ -1,20 +1,17 @@
-#!/usr/bin/env sh
-
 sudo yabai --load-sa
 yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
 
 # global settings
 yabai -m config mouse_follows_focus          off
-yabai -m config focus_follows_mouse          on
 yabai -m config window_placement             second_child
 yabai -m config window_topmost               off
 yabai -m config window_shadow                float
 yabai -m config window_opacity               off
-# yabai -m config window_opacity_duration      0.0 # big sur fail
+
 yabai -m config active_window_opacity        1.0
-yabai -m config normal_window_opacity        0.9
-yabai -m config window_border                on
-yabai -m config window_border_width          8
+yabai -m config normal_window_opacity        1.0
+yabai -m config window_border                off
+yabai -m config window_border_width          5
 yabai -m config active_window_border_color   0xffbada55
 yabai -m config normal_window_border_color   0xff555555
 yabai -m config insert_feedback_color        0xffd75f5f
@@ -26,25 +23,76 @@ yabai -m config mouse_action2                resize
 yabai -m config mouse_drop_action            swap
 
 # general space settings
-yabai -m config layout                       bsp
-yabai -m config top_padding                  08
-yabai -m config bottom_padding               08
-yabai -m config left_padding                 08
-yabai -m config right_padding                08
-yabai -m config window_gap                   08
+yabai -m config layout                       stack
+yabai -m config top_padding                  5
+yabai -m config bottom_padding               5
+yabai -m config left_padding                 5
+yabai -m config right_padding                5
+yabai -m config window_gap                   5
+yabai -m config external_bar                 all:0:30
+
+# space system
+# (TODO) investigate handling native fullscreen screens
+
+num_spaces=$(yabai -m query --spaces | jq '. | length')
+while [ $num_spaces -le 6 ]
+do
+    yabai -m space --create
+    ((num_spaces++))
+done
+
+# spaces
+# 1 settings / copying [default] <float>
+yabai -m space 1 --label default
+yabai -m space default --layout bsp
+
+# 2 slack / email / resgu [company] <stack>
+yabai -m space 2 --label company
+yabai -m space company --layout stack
+
+# 3 zoom / teams [comm] <bsp>
+yabai -m space 3 --label comm
+yabai -m space comm --layout bsp
+
+# 4 terminal [term] <fullscreen (stack)>
+yabai -m space 4 --label term
+yabai -m space term --layout stack
+
+# 5 browser / unity [build] <bsp>
+yabai -m space 5 --label build
+yabai -m space build --layout bsp
+
+# 6 vm / vpn [vpn] <fullsceen (stack)>
+yabai -m space 6 --label vm
+yabai -m space vm --layout stack
+
+# 7 discord / tetris / youtube / music [private] <stack>
+yabai -m space 7 --label private
+yabai -m space private --layout stack
+
+# = slides [slides] <fullscreen> ;; make this on demand
+# (TODO) handle 2nd display for webinars
+# (TODO) handle slides screen for webinars
 
 # rules
+# (TODO) teams floating window makes us jump back all the time
+# yabai -m rule --add app="." space=^default
+
+sketchybar --trigger yabai_spaces_refresh
+
 yabai -m rule --add app="^App Store$" manage=off
 yabai -m rule --add app="^Finder$" title="^Bin$" manage=off
 yabai -m rule --add app="^Parallels Desktop$" title="^Control Center$" manage=off
-yabai -m rule --add app="^iTerm2$" manage=off topmost=on
 yabai -m rule --add app="^Harvest$" manage=off
 yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="^Unity$" manage=off
 
-yabai -m rule --add app="^Discord$" display=1
-yabai -m rule --add app="^Discord$" title="^Loading$" manage=off topmost=on
-yabai -m rule --add app="^Slack$" display=1
+yabai -m rule --add app="^Alacritty$" space=^term
 
+yabai -m rule --add app="^Slack$" space=^company
 
-echo "yabai configuration loaded.."
+yabai -m rule --add app="^Microsoft Teams$" space=comm
+yabai -m rule --add app="^zoom.us$" space=^comm
+
+yabai -m rule --add app="^Discord$" space=^private
+
