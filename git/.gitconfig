@@ -1,6 +1,7 @@
 [alias]
 	co = checkout
 	s = status
+	f = fetch
 	slog = !"git --no-pager log -n \"$1\" --oneline #"
 
 	adog = log --all --decorate --oneline --graph
@@ -46,6 +47,9 @@
 	open = checkout -b
 	close = !sh -c 'git merge $1 --no-ff --no-edit && git branch -d $1' -
 	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
+
+	prox = !"git config --global http.proxy http://$1.shared:8888"
+	proxoff = config --global --unset http.proxy
 [url "git@bitbucket.org-npxdu:npxdu/"]
 	insteadOf = https://bitbucket.org/npxdu/
 [pager]
