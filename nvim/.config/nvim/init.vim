@@ -145,3 +145,6 @@ augroup fmt
 augroup END
 " configure template vim-html-template-literals
 let g:htl_css_templates = 1
+" disable unused providers
+let g:loaded_ruby_provider = 0
+let g:loaded_perl_provider = 0
