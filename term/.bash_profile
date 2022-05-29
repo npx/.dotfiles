@@ -118,3 +118,6 @@ bindkey -s ^f "tmux-sessionizer\n"
 
 # export path
 export PATH=$PATH:/Users/ybaron/bin
+
+# setup rust env
+. "$HOME/.cargo/env"
