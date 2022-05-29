@@ -8,7 +8,13 @@ local actions = require("telescope.actions")
 require('telescope').setup{
   defaults = {
     file_ignore_patterns = { "%.mat", "%.meta", "%.asset", "%.prefab", "%.shader", "%.cginc", "%.asmdef", "%.unity" }
-  }
+  },
+  mappings = {
+    i = {
+      ["<C-x>"] = false,
+      ["<C-q>"] = actions.send_to_qflist,
+    },
+  },
 }
 
 local M = {}
