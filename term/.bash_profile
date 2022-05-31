@@ -52,8 +52,10 @@ npx() {
 }
 
 nvim() {
-  lazynvm
-  nvim $@
+  if [ -f "package.json" ]; then
+    lazynvm
+  fi
+  command nvim $@
 }
 
 # make path available
