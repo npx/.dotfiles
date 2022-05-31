@@ -1,5 +1,15 @@
 export WDSM_NPM_TOKEN="unknown"
-export DOTFILES="$HOME/.dotfiles"
+
+# MY FOLDERS
+export WORK="$HOME/Work"
+export PROJECTS="$HOME/Private/github.com/npx"
+export DOTFILES="$PROJECTS/.dotfiles"
+
+alias ww="cd $WORK"
+alias pp="cd $PROJECTS"
+alias df="cd $DOTFILES"
+
+bindkey -s ^f "tmux-sessionizer\n"
 
 # PATH
 PATH="${PATH}:/usr/local/sbin"
@@ -108,13 +118,6 @@ function chrome_private () {
   open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Private
 }
 
-# Folders
-alias ww="cd ~/Work"
-alias pp="cd ~/Private/github.com/npx"
-alias df="cd $DOTFILES"
-
-# Fuzzy find projects
-bindkey -s ^f "tmux-sessionizer\n"
 
 # export path
 export PATH=$PATH:/Users/ybaron/bin
