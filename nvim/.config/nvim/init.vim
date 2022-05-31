@@ -58,7 +58,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-telescope/telescope.nvim'
 
     " Color Theme
-    Plug 'gruvbox-community/gruvbox'
+    Plug 'sainnhe/gruvbox-material'
 
     " Automatically set tabwitch
     Plug 'tpope/vim-sleuth'
@@ -105,7 +105,9 @@ lua require("npx")
 " setup comment plugin bindings 
 lua require('Comment').setup()
 " set theme
-colorscheme gruvbox
+let g:gruvbox_material_background = 'hard'
+let g:gruvbox_material_better_performance = 1
+colorscheme gruvbox-material
 " use ' as leader
 let mapleader = " "
 nnoremap <Space> <Nop>
