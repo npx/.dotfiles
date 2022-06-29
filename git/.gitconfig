@@ -42,8 +42,8 @@
 
 	empty = !sh -c 'find . -path ./.git -prune -o -exec rm -rf {} + 2> /dev/null'
 
-	sync = !sh -c "git fetch origin $1:$1"
-	hardsync = !"git reset --hard origin/\"$(git rev-parse --abbrev-ref HEAD)\""
+	# git sync <branch>: force <branch> to reset to its upstream
+	sync = !sh -c 'git branch -fq $1 origin/$1' -
 
 	open = checkout -b
 	close = !sh -c 'git merge $1 --no-ff --no-edit && git branch -d $1' -
