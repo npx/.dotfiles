@@ -2,10 +2,12 @@
 	co = checkout
 	s = status
 	f = fetch
+
 	slog = !"git --no-pager log -n \"$1\" --oneline #"
 
 	adog = log --all --decorate --oneline --graph
 
+	# git blg <branch> <branch> ...: show graph with only matching partial branch names
 	blg = "!f() { \
 		cmd=\"git log --oneline --graph\"; \
 		for p in $@; \
@@ -23,23 +25,26 @@
 	lg2 = !"git lg2-specific --all"
 	lg3 = !"git lg3-specific --all"
 
-	lg0-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(auto)%s%C(reset) %C(auto)%d%C(reset)'
-	lg1-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(auto)%s%C(reset) %C(dim normal)- %an%C(reset)%C(auto)%d%C(reset)'
-	lg2-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset) %C(dim normal)- %an%C(reset)'
-	lg3-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset)%n''          %C(dim normal)- %an <%ae> %C(reset) %C(dim normal)(committer: %cn <%ce>)%C(reset)'
+	lg0-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(auto)%s%C(reset) %C(auto)%d%C(reset)'
+	lg1-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(auto)%s%C(reset) %C(dim normal)- %an%C(reset)%C(auto)%d%C(reset)'
+	lg2-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset) %C(dim normal)- %an%C(reset)'
+	lg3-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset)%n''          %C(dim normal)- %an <%ae> %C(reset) %C(dim normal)(committer: %cn <%ce>)%C(reset)'
 
+	# TODO replace 'origin' with porcelain to determine upstream
 	nuke = !sh -c 'git branch -D $1 && git push origin :$1' -
 
+	# remove deleted remote branches
 	trim = !"git remote prune origin"
 
+	# delete local branches that have no remote anymore
 	tidy = !"git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D"
 
 	recommit = !"git commit --amend --no-edit"
-
 	uncommit = !"git reset --soft HEAD^"
 
-	punch = !"git push --force"
+	punch = !"git push --force-with-lease"
 
+	# delete everything but the git folder
 	empty = !sh -c 'find . -path ./.git -prune -o -exec rm -rf {} + 2> /dev/null'
 
 	# git sync <branch>: force <branch> to reset to its upstream
@@ -47,6 +52,10 @@
 
 	open = checkout -b
 	close = !sh -c 'git merge $1 --no-ff --no-edit && git branch -d $1' -
+
+	# rewrite commits
+    # e.g: git change-commits GIT_AUTHOR_NAME "old name" "new name"
+    # e.g: git change-commits GIT_AUTHOR_EMAIL "old name" "new name"
 	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
 
 	prox = !"git config --global http.proxy http://$1.shared:8888"
