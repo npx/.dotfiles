@@ -1,0 +1,20 @@
+git:
+  branchLogCmd: "git lg"
+  allBranchesLogCmd: "git lg2"
+customCommands:
+  - key: 'S'
+    command: "git branch -fq {{.SelectedLocalBranch.Name}} origin/{{.SelectedLocalBranch.Name}}"
+    context: 'localBranches'
+  - key: '8'
+    prompts:
+      - type: 'menu'
+        title: 'Stash Operation'
+        options:
+          - name: 'apply'
+            description: 'apply latest'
+            value: 'apply'
+          - name: 'pop'
+            description: 'pop latest'
+            value: 'pop'
+    command: "git stash {{index .PromptResponses 0}}"
+    context: 'global'
