@@ -103,6 +103,9 @@ function webinar() {
 function git-watch() {
     watch -ct -n1 git --no-pager log --color --all --oneline --decorate --graph
 }
+function git-status() {
+    watch -ct -n1 git -c color.status=always --no-optional-locks status
+}
 
 # Chrome
 function chrome_work () {
