@@ -129,3 +129,9 @@ export PATH=$PATH:/Users/ybaron/bin
 
 # setup rust env
 . "$HOME/.cargo/env"
+
+# setup fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# setup fuck
+eval $(thefuck --alias)
