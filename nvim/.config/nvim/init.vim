@@ -88,7 +88,7 @@ call plug#begin('~/.vim/plugged')
 
     " Misc
     Plug 'junegunn/goyo.vim'
-    Plug 'tpope/vim-surround'
+    Plug 'kylechui/nvim-surround'
     Plug 'numToStr/Comment.nvim'
 
     " Angular
