@@ -8,8 +8,6 @@ set guicursor=
 " show line numbers
 set number
 set relativenumber
-" disable the swapfile
-set noswapfile
 " highlight all results
 set hlsearch
 " ignore case in search
@@ -51,7 +49,7 @@ set splitbelow
 " Plugins
 call plug#begin('~/.vim/plugged')
     " Treesitter
-    Plug 'nvim-treesitter/nvim-treesitter'
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
     " Telescope
     Plug 'nvim-lua/plenary.nvim'
