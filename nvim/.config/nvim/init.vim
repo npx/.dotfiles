@@ -62,6 +62,7 @@ call plug#begin('~/.vim/plugged')
 
     " Color Theme
     Plug 'sainnhe/gruvbox-material'
+    Plug 'catppuccin/nvim', {'as': 'catppuccin'}
 
     " Automatically set tabwitch
     Plug 'tpope/vim-sleuth'
@@ -107,6 +108,9 @@ call plug#end()
 lua require("npx")
 " setup comment plugin bindings 
 lua require('Comment').setup()
+" set theme
+" let g:catppuccin_flavour = "mocha" " latte, frappe, macchiato, mocha
+" colorscheme catppuccin
 " set theme
 let g:gruvbox_material_background = 'hard'
 let g:gruvbox_material_better_performance = 1
