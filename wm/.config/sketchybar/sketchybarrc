@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
 
-height=30
+height=40
 
 ############## BAR ############## 
 sketchybar -m --bar height=$height   \
                     position=bottom  \
+                    y_offset=5       \
                     padding_left=15  \
                     padding_right=15 \
-                    margin=5         \
-                    color=0xff202020
+                    margin=20        \
+                    color=0xf2000000
 
 ############## GLOBAL DEFAULTS ############## 
 sketchybar -m --default updates=when_shown                    \
                         drawing=on                            \
-                        icon.font="Hack Nerd Font:Bold:17.0"  \
+                        icon.font="Hack Nerd Font:Bold:18.0"  \
                         icon.color=0xffa8a8a8                 \
-                        label.font="Hack Nerd Font:Bold:14.0" \
+                        label.font="Hack Nerd Font:Bold:18.0" \
                         label.color=0xffa8a8a8
 
 ############## SPACES PLUGIN  ############## 
 ~/.config/sketchybar/plugins/yabai-spaces.sh
 
 ############## CENTER ITEMS ############## 
-sketchybar -m --add event refresh_windows \
-              --add item windows center   \
-              --set windows script="~/.config/sketchybar/plugins/windows.sh" \
-              --subscribe windows front_app_switched space_change refresh_windows
-
-yabai -m signal --add event=space_changed label=windows action="sketchybar --trigger refresh_windows"
-yabai -m signal --add event=window_focused label=windows2 action="sketchybar --trigger refresh_windows"
-
+# sketchybar -m --add event refresh_windows \
+#               --add item windows center   \
+#               --set windows script="~/.config/sketchybar/plugins/windows.sh" \
+#               --subscribe windows front_app_switched space_change refresh_windows
+#
+# yabai -m signal --add event=space_changed label=windows action="sketchybar --trigger refresh_windows"
+# yabai -m signal --add event=window_focused label=windows2 action="sketchybar --trigger refresh_windows"
 
 ############## FINALIZING THE SETUP ##############
 sketchybar -m --update

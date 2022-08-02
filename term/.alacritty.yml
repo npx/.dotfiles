@@ -10,7 +10,8 @@ key_bindings:
   - { key: Key6, mods: Control, chars: "\x1e" }
 window:
   decorations: none
+  opacity: 0.95
   padding:
-    x: 5
-    y: 5
+    x: 10
+    y: 10
   startup_mode: Maximized

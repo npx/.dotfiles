@@ -20,9 +20,9 @@ do
   sketchybar -m --add space $item left                            \
                 --set $item associated_display=1                  \
                       associated_space=$index                     \
-                      icon.font="Font Awesome 6 Free:Solid:14.0"  \
+                      icon.font="Font Awesome 6 Free:Solid:18.0"  \
                       icon=${!icon:=•}                            \
-                      icon.highlight_color=0xffffab91             \
+                      icon.highlight_color=0xf2cd2e4c             \
                       click_script="yabai -m space --focus $label || yabai -m space --focus recent"
 done < <(yabai -m query --spaces | jq -cr '.[] | (.label, .index)')
 
