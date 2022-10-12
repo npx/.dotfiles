@@ -4,7 +4,7 @@ syntax on
 " exrc: option to load vimrc files from project folder
 set exrc
 " keep the blocky cursor
-set guicursor=
+" set guicursor=
 " show line numbers
 set number
 set relativenumber
