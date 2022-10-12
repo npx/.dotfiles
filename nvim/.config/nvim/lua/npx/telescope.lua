@@ -7,7 +7,8 @@ local actions = require("telescope.actions")
 
 require('telescope').setup{
   defaults = {
-    file_ignore_patterns = { "%.mat", "%.meta", "%.asset", "%.prefab", "%.shader", "%.cginc", "%.asmdef", "%.unity" }
+    file_ignore_patterns = { "%.mat", "%.meta", "%.asset", "%.prefab", "%.shader", "%.cginc", "%.asmdef", "%.unity" },
+    layout_strategy = "vertical"
   },
   mappings = {
     i = {
@@ -22,6 +23,7 @@ local M = {}
 M.project_files = function()
   local opts = {
 	  -- git_command = { "git", "ls-files", "--exclude-standard" } 
+	  show_untracked = true
   }
   local ok = pcall(require"telescope.builtin".git_files, opts)
   if not ok then require"telescope.builtin".find_files(opts) end
