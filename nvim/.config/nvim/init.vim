@@ -42,7 +42,7 @@ set updatetime=50
 " dont pass messages to |ins-completion-menu|
 set shortmess+=c
 " enable system clipboard
-set clipboard+=unnamedplus
+" set clipboard+=unnamedplus
 " open new split panes to right and below
 set splitright
 set splitbelow
