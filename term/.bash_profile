@@ -135,3 +135,6 @@ export PATH=$PATH:/Users/ybaron/bin
 
 # setup fuck
 eval $(thefuck --alias)
+
+# parrot
+alias party="ssh ssh.caarlos0.dev -p 2225"
