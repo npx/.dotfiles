@@ -9,8 +9,8 @@ nnoremap <leader>vsd :lua vim.diagnostic.open_float(0, {scope="line"})<CR>
 
 nnoremap <leader>vf :lua vim.lsp.buf.formatting()<CR>
 nnoremap <leader>vi :lua vim.lsp.buf.implementation()<CR>
-nnoremap <leader>vn :lua vim.lsp.diagnostic.goto_next()<CR>
-nnoremap <leader>vp :lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <leader>vn :lua vim.diagnostic.goto_next()<CR>
+nnoremap <leader>vp :lua vim.diagnostic.goto_prev()<CR>
 nnoremap <leader>vsh :lua vim.lsp.buf.signature_help()<CR>
 
 nnoremap <leader>cn :cnext<CR>
