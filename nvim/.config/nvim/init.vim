@@ -61,6 +61,8 @@ call plug#begin('~/.vim/plugged')
     " Color Theme
     Plug 'sainnhe/gruvbox-material'
     Plug 'catppuccin/nvim', {'as': 'catppuccin'}
+    Plug 'marko-cerovac/material.nvim'
+    Plug 'ray-x/aurora'
 
     " Automatically set tabwitch
     Plug 'tpope/vim-sleuth'
@@ -110,10 +112,19 @@ lua require('Comment').setup()
 " let g:catppuccin_flavour = "mocha" " latte, frappe, macchiato, mocha
 " colorscheme catppuccin
 " set theme
-let g:gruvbox_material_background = 'hard'
-let g:gruvbox_material_transparent_background = 1
-let g:gruvbox_material_better_performance = 1
-colorscheme gruvbox-material
+" let g:gruvbox_material_background = 'hard'
+" let g:gruvbox_material_transparent_background = 1
+" let g:gruvbox_material_better_performance = 1
+" colorscheme gruvbox-material
+" set theme
+" let g:material_style = "darker"
+" colorscheme material
+" set theme
+set termguicolors
+let g:aurora_italic = 1     " italic
+let g:aurora_transparent = 1     " transparent
+let g:aurora_bold = 1     " bold
+colorscheme aurora
 " use ' as leader
 let mapleader = " "
 nnoremap <Space> <Nop>
