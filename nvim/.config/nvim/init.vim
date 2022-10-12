@@ -64,7 +64,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'marko-cerovac/material.nvim'
     Plug 'ray-x/aurora'
 
-    " Automatically set tabwitch
+    " Automatically set tabwidth
     Plug 'tpope/vim-sleuth'
 
     " LSP
