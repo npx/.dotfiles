@@ -166,3 +166,6 @@ require "lspconfig".rust_analyzer.setup(
         }
     }
 )
+
+-- Go
+require'lspconfig'.gopls.setup{}
