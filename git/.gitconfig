@@ -23,12 +23,13 @@
 	lg0 = !"git lg0-specific --all"
 	lg1 = !"git lg1-specific --all"
 	lg2 = !"git lg2-specific --all"
-	lg3 = !"git lg3-specific --all"
+	lg-empty = !"git lg4-empty --all"
 
 	lg0-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(auto)%s%C(reset) %C(auto)%d%C(reset)'
 	lg1-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(auto)%s%C(reset) %C(dim normal)- %an%C(reset)%C(auto)%d%C(reset)'
 	lg2-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset) %C(dim normal)- %an%C(reset)'
 	lg3-specific = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(normal)%s%C(reset)%n''          %C(dim normal)- %an <%ae> %C(reset) %C(dim normal)(committer: %cn <%ce>)%C(reset)'
+	lg4-empty = log --exclude=refs/stash --color --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - feat(no-scope): secret commit message'
 
 	# TODO replace 'origin' with porcelain to determine upstream
 	nuke = !sh -c 'git branch -D $1 && git push origin :$1' -
