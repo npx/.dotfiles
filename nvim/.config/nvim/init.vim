@@ -108,8 +108,6 @@ call plug#begin('~/.vim/plugged')
 call plug#end()
 " load lua modules
 lua require("npx")
-" setup comment plugin bindings 
-lua require('Comment').setup()
 " set theme
 " let g:catppuccin_flavour = "mocha" " latte, frappe, macchiato, mocha
 " colorscheme catppuccin
