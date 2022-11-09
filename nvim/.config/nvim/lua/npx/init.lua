@@ -1,4 +1,5 @@
 require("npx.comment")
+require("npx.gitsigns")
 require("npx.lsp")
 require("npx.surround")
 require("npx.telescope")

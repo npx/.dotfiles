@@ -84,6 +84,7 @@ call plug#begin('~/.vim/plugged')
     " Git
     Plug 'tpope/vim-fugitive'
     Plug 'junegunn/gv.vim'
+    Plug 'lewis6991/gitsigns.nvim'
 
     " Formatting
     Plug 'sbdchd/neoformat'
