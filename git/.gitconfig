@@ -66,8 +66,6 @@
 
 	prox = !"git config --global http.proxy http://$1.shared:8888"
 	proxoff = config --global --unset http.proxy
-[url "git@bitbucket.org-npxdu:npxdu/"]
-	insteadOf = https://bitbucket.org/npxdu/
 [pager]
 	branch = false
 [pull]
