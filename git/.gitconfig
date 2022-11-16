@@ -3,8 +3,13 @@
 	s = status
 	f = fetch
 
+	d = diff
+	ds = diff --staged
+
+	# git slog <number>: show <number> past commit messages
 	slog = !"git --no-pager log -n \"$1\" --oneline #"
 
+	# git adog: doggy graph
 	adog = log --all --decorate --oneline --graph
 
 	# git blg <branch> <branch> ...: show graph with only matching partial branch names
@@ -55,8 +60,8 @@
 	close = !sh -c 'git merge $1 --no-ff --no-edit && git branch -d $1' -
 
 	# rewrite commits
-    # e.g: git change-commits GIT_AUTHOR_NAME "old name" "new name"
-    # e.g: git change-commits GIT_AUTHOR_EMAIL "old name" "new name"
+	# e.g: git change-commits GIT_AUTHOR_NAME "old name" "new name"
+	# e.g: git change-commits GIT_AUTHOR_EMAIL "old name" "new name"
 	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
 
 	prox = !"git config --global http.proxy http://$1.shared:8888"
