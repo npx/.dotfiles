@@ -1,8 +1,4 @@
-local pickers = require("telescope.pickers")
-local finders = require("telescope.finders")
-local previewers = require("telescope.previewers")
-local action_state = require("telescope.actions.state")
-local conf = require("telescope.config").values
+local telescope_builtin = require("telescope.builtin")
 local actions = require("telescope.actions")
 
 require("telescope").setup({
@@ -19,11 +15,9 @@ require("telescope").setup({
 			"%.unity",
 		},
 		layout_strategy = "vertical",
-	},
-	mappings = {
-		i = {
-			["<C-x>"] = false,
-			["<C-q>"] = actions.send_to_qflist,
+		mappings = {
+			i = { ["<Tab>"] = "select_vertical" },
+			n = { ["<Tab>"] = "select_vertical" },
 		},
 	},
 })
@@ -35,14 +29,14 @@ M.project_files = function()
 		-- git_command = { "git", "ls-files", "--exclude-standard" }
 		show_untracked = true,
 	}
-	local ok = pcall(require("telescope.builtin").git_files, opts)
+	local ok = pcall(telescope_builtin.git_files, opts)
 	if not ok then
-		require("telescope.builtin").find_files(opts)
+		telescope_builtin.find_files(opts)
 	end
 end
 
 M.search_dotfiles = function()
-	require("telescope.builtin").git_files({
+	telescope_builtin.git_files({
 		prompt_title = "< VimRC >",
 		cwd = vim.env.DOTFILES,
 		hidden = true,
@@ -50,7 +44,7 @@ M.search_dotfiles = function()
 end
 
 M.git_branches = function()
-	require("telescope.builtin").git_branches({
+	telescope_builtin.git_branches({
 		attach_mappings = function(_, map)
 			map("i", "<c-d>", actions.git_delete_branch)
 			map("n", "<c-d>", actions.git_delete_branch)
