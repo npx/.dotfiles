@@ -1,51 +1,25 @@
--- Setup nvim-cmp (Auto Complete)
-local cmp = require("cmp")
+local mason = require("npx.mason-setup")
 
-cmp.setup({
-	snippet = {
-		expand = function(args)
-			-- For `vsnip` user.
-			vim.fn["vsnip#anonymous"](args.body)
-
-			-- For `luasnip` user.
-			-- require('luasnip').lsp_expand(args.body)
-
-			-- For `ultisnips` user.
-			-- vim.fn["UltiSnips#Anon"](args.body)
-		end,
-	},
-	mapping = {
-		["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
-		["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
-		["<C-d>"] = cmp.mapping.scroll_docs(-4),
-		["<C-f>"] = cmp.mapping.scroll_docs(4),
-		["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "n" }),
-		["<C-e>"] = cmp.mapping.close(),
-		["<CR>"] = cmp.mapping.confirm({
-			behavior = cmp.ConfirmBehavior.Insert,
-			select = true,
-		}),
-		["<Tab>"] = cmp.mapping.confirm({
-			behavior = cmp.ConfirmBehavior.Replace,
-			select = true,
-		}),
-	},
-	sources = {
-		{ name = "nvim_lsp" },
-		-- For vsnip user.
-		{ name = "vsnip" },
-		-- For luasnip user.
-		-- { name = 'luasnip' },
-
-		-- For ultisnips user.
-		-- { name = 'ultisnips' },
-
-		{ name = "buffer", keyword_length = 5 },
-	},
+-- borders for hover
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+	border = "rounded",
 })
 
--- Configure Typescript LSP
-require("lspconfig").tsserver.setup({
+-- ESLint
+mason.configure("eslint", {
+	on_new_config = function(config, new_root_dir)
+		-- The "workspaceFolder" is a VSCode concept. It limits how far the
+		-- server will traverse the file system when locating the ESLint config
+		-- file (e.g., .eslintrc).
+		config.settings.workspaceFolder = {
+			uri = vim.loop.cwd(),
+			name = vim.fn.fnamemodify(new_root_dir, ":t"),
+		}
+	end,
+})
+
+-- TypeScript
+mason.configure("tsserver", {
 	capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities()),
 	-- Needed for inlayHints. Merge this table with your settings or copy
 	-- it from the source if you want to add your own init_options.
@@ -110,50 +84,25 @@ require("lspconfig").tsserver.setup({
 	end,
 })
 
-require("lspconfig").eslint.setup({
-	on_new_config = function(config, new_root_dir)
-		-- The "workspaceFolder" is a VSCode concept. It limits how far the
-		-- server will traverse the file system when locating the ESLint config
-		-- file (e.g., .eslintrc).
-		config.settings.workspaceFolder = {
-			uri = vim.loop.cwd(),
-			name = vim.fn.fnamemodify(new_root_dir, ":t"),
-		}
-	end,
-})
-
-vim.diagnostic.config({
-	virtual_text = true,
-})
-
--- Configure Omnisharp LSP
+-- C# (Omnisharp)
 local pid = vim.fn.getpid()
 local omnisharp_bin = "/Users/ybaron/omnisharp/run"
-local nvim_lsp = require("lspconfig")
-
-require("lspconfig").omnisharp.setup({
+mason.configure("omnisharp", {
 	cmd = { omnisharp_bin, "--languageserver", "--hostPID", tostring(pid) },
-	root_dir = nvim_lsp.util.root_pattern("*.csproj", "*.sln"),
+	root_dir = require("lspconfig").util.root_pattern("*.csproj", "*.sln"),
 	capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities()),
 })
 
--- Rust
-require("lspconfig").rust_analyzer.setup({
+-- Lua
+mason.configure("sumneko_lua", {
 	settings = {
-		["rust-analyzer"] = {
-			assist = {
-				importGranularity = "module",
-				importPrefix = "self",
-			},
-			cargo = {
-				loadOutDirsFromCheck = true,
-			},
-			procMacro = {
-				enable = true,
+		Lua = {
+			diagnostics = {
+				globals = { "vim" },
 			},
 		},
 	},
 })
 
--- Go
-require("lspconfig").gopls.setup({})
+-- auto setup the rest
+mason.setup()
