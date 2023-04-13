@@ -1,6 +1,5 @@
 require("npx.auto-complete")
 require("npx.comment")
-require("npx.gitsigns")
 require("npx.lsp")
 require("npx.statusline")
 require("npx.surround")
