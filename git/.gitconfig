@@ -84,3 +84,5 @@
 	ff = only
 [init]
 	defaultBranch = main
+[core]
+	autocrlf = input
