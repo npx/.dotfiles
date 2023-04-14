@@ -8,6 +8,12 @@ require("npx.telescope")
 require("npx.treesitter")
 require("npx.which-key")
 
+-- Setup Autopairs
+require("nvim-autopairs").setup()
+
+-- Setup Oil (buffer-like file managament)
+require("oil").setup()
+
 -- Setup NetRW
 vim.g.netrw_browse_split = 0
 vim.g.netrw_banner = 0
