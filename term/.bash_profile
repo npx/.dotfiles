@@ -110,7 +110,8 @@ function git-status() {
 # Chrome
 function chrome_work () {
   yabai -m space --focus company
-  open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Work
+  # open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Work
+  open -na 'Google Chrome'
 }
 
 function chrome_dev () {
@@ -120,7 +121,8 @@ function chrome_dev () {
 
 function chrome_private () {
   yabai -m space --focus private
-  open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Private
+  open -na 'Google Chrome'
+  # open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Private
 }
 
 
@@ -128,13 +130,10 @@ function chrome_private () {
 export PATH=$PATH:/Users/ybaron/bin
 
 # setup rust env
-. "$HOME/.cargo/env"
-
-# setup fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 # setup fuck
-eval $(thefuck --alias)
+[ -x "$(command -v thefuck)" ] && eval $(thefuck --alias)
 
 # parrot
 alias party="ssh ssh.caarlos0.dev -p 2225"
