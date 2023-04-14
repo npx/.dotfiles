@@ -32,9 +32,9 @@ set nobackup
 set scrolloff=8
 set sidescrolloff=8
 " rulers
-set colorcolumn=80,100
+set colorcolumn=100
 " keep a side column for addons
-set signcolumn=yes
+set signcolumn=no
 " more space for displaying messages
 set cmdheight=1
 " dont show mode in cmdline
