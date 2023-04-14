@@ -17,7 +17,7 @@ do
   read -r index
   item=space_$label
   icon=icon_$label
-  sketchybar -m --add space $item left                            \
+  sketchybar -m --add space $item center                          \
                 --set $item associated_display=1                  \
                       associated_space=$index                     \
                       icon.font="Font Awesome 6 Free:Solid:18.0"  \
