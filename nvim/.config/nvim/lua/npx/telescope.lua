@@ -5,6 +5,7 @@ require("telescope").setup({
 	defaults = {
 		file_ignore_patterns = {
 			".git/",
+			"backendApi/", -- make this load via exrc to project local
 			"%.mat",
 			"%.meta",
 			"%.asset",
