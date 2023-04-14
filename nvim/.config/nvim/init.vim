@@ -61,9 +61,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'ThePrimeagen/harpoon'
 
     " Color Theme
-    Plug 'sainnhe/gruvbox-material'
-    Plug 'catppuccin/nvim', {'as': 'catppuccin'}
-    Plug 'marko-cerovac/material.nvim'
     Plug 'ray-x/aurora'
 
     " Automatically set tabwidth
@@ -116,20 +113,6 @@ set termguicolors
 
 " load lua modules
 lua require("npx")
-
-" set theme catpuccin
-" let g:catppuccin_flavour = "mocha" " latte, frappe, macchiato, mocha
-" colorscheme catppuccin
-
-" set theme gruvbox
-" let g:gruvbox_material_background = 'hard'
-" let g:gruvbox_material_transparent_background = 1
-" let g:gruvbox_material_better_performance = 1
-" colorscheme gruvbox-material
-
-" set theme material
-" let g:material_style = "darker"
-" colorscheme material
 
 " set theme
 let g:aurora_italic = 1          " italic
