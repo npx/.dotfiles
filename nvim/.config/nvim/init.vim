@@ -95,6 +95,9 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-lualine/lualine.nvim'
     Plug 'numToStr/FTerm.nvim'
 
+    " Which Key
+    Plug 'folke/which-key.nvim'
+
     " Angular
     Plug 'softoika/ngswitcher.vim'
     

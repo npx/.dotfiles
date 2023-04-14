@@ -6,6 +6,7 @@ require("npx.statusline")
 require("npx.surround")
 require("npx.telescope")
 require("npx.treesitter")
+require("npx.which-key")
 
 -- Setup NetRW
 vim.g.netrw_browse_split = 0
