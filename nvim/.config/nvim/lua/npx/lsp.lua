@@ -100,7 +100,7 @@ mason.configure("omnisharp", {
 })
 
 -- Lua
-mason.configure("sumneko_lua", {
+mason.configure("lua_ls", {
 	settings = {
 		Lua = {
 			diagnostics = {
