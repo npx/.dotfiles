@@ -1,5 +1,6 @@
 require("npx.auto-complete")
 require("npx.comment")
+require("npx.fterm")
 require("npx.lsp")
 require("npx.statusline")
 require("npx.surround")

@@ -96,6 +96,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'numToStr/Comment.nvim'
     Plug 'tamton-aquib/duck.nvim'
     Plug 'nvim-lualine/lualine.nvim'
+    Plug 'numToStr/FTerm.nvim'
 
     " Angular
     Plug 'softoika/ngswitcher.vim'
