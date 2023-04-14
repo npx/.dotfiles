@@ -131,10 +131,6 @@ colorscheme aurora
 let mapleader = " "
 nnoremap <Space> <Nop>
 " use ctrl+hjkl to move between split/vsplit panels
-tnoremap <C-h> <C-\><C-n><C-w>h
-tnoremap <C-j> <C-\><C-n><C-w>j
-tnoremap <C-k> <C-\><C-n><C-w>k
-tnoremap <C-l> <C-\><C-n><C-w>l
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
@@ -167,3 +163,6 @@ let g:htl_css_templates = 1
 " disable unused providers
 let g:loaded_ruby_provider = 0
 let g:loaded_perl_provider = 0
+let g:loaded_python3_provider = 0
+" keep clear console clean 
+autocmd CursorHold * echon ''
