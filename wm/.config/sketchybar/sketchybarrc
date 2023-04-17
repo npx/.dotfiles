@@ -4,19 +4,21 @@ height=40
 
 ############## BAR ############## 
 sketchybar -m --bar height=$height   \
-                    position=bottom  \
-                    y_offset=5       \
-                    padding_left=15  \
+                    width=$height    \
+                    position=left    \
+                    y_offset=10      \
+                    padding_left=0   \
                     padding_right=15 \
-                    margin=20        \
-                    color=0xf2000000
+                    margin=5         \
+                    sticky=on        \
+                    color=0x00000000
 
 ############## GLOBAL DEFAULTS ############## 
 sketchybar -m --default updates=when_shown                    \
                         drawing=on                            \
-                        icon.font="Hack Nerd Font:Bold:18.0"  \
+                        icon.font="FiraCode Nerd Font:Regular:24.0"  \
                         icon.color=0xffa8a8a8                 \
-                        label.font="Hack Nerd Font:Bold:18.0" \
+                        label.font="FiraCode Nerd Font:Regular:24.0" \
                         label.color=0xffa8a8a8
 
 ############## SPACES PLUGIN  ############## 
