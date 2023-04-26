@@ -57,16 +57,20 @@
 	# delete local branches that have no remote anymore
 	tidy = !"git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D"
 
+	# ammend staged changes to last commit
 	recommit = !"git commit --amend --no-edit"
+
+	# soft reset previous commit
 	uncommit = !"git reset --soft HEAD^"
 
+	# force push with lease
 	punch = !"git push --force-with-lease"
 
 	# delete everything but the git folder
 	empty = !sh -c 'find . -path ./.git -prune -o -exec rm -rf {} + 2> /dev/null'
 
 	# git sync <branch>: force <branch> to reset to its upstream
-	sync = !sh -c 'git branch -fq $1 origin/$1' -
+	sync = "!sh -c '[ $# -eq 0 ] && git reset --hard @{push} || git branch -fq $1 origin/$1'" -
 
 	open = checkout -b
 	close = !sh -c 'git merge $1 --no-ff --no-edit && git branch -d $1' -
@@ -76,6 +80,7 @@
 	# e.g: git change-commits GIT_AUTHOR_EMAIL "old name" "new name"
 	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
 
+	# global http proxy
 	prox = !"git config --global http.proxy http://$1.shared:8888"
 	proxoff = config --global --unset http.proxy
 [pager]
