@@ -123,7 +123,7 @@ let g:aurora_transparent = 1     " transparent
 let g:aurora_bold = 1            " bold
 colorscheme aurora
 
-" use ' as leader
+" use <Space> as leader
 let mapleader = " "
 nnoremap <Space> <Nop>
 " use ctrl+hjkl to move between split/vsplit panels
