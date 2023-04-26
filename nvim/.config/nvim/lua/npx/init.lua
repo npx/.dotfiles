@@ -1,4 +1,8 @@
+-- Set leader before other plugins
+vim.g.mapleader = ' ';
+
 require("npx.auto-complete")
+require("npx.buffer-management")
 require("npx.comment")
 require("npx.fterm")
 require("npx.lsp")
@@ -23,6 +27,4 @@ vim.g.netrw_winsize = 25
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 
 -- show virtual_text
-vim.diagnostic.config({
-	virtual_text = true,
-})
+vim.diagnostic.config({virtual_text = true})

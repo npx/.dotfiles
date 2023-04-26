@@ -94,7 +94,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'windwp/nvim-autopairs'
     Plug 'shortcuts/no-neck-pain.nvim'
     Plug 'stevearc/oil.nvim'
-    Plug 'chrisgrieser/nvim-early-retirement'
 
     " Which Key
     Plug 'folke/which-key.nvim'
