@@ -17,7 +17,7 @@ require("telescope").setup({
 		},
 		layout_strategy = "vertical",
 		mappings = {
-			i = { ["<Tab>"] = "select_vertical" },
+			i = { ["<Tab>"] = "select_vertical", ["<esc>"] = actions.close },
 			n = { ["<Tab>"] = "select_vertical" },
 		},
 	},
