@@ -57,9 +57,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-lua/plenary.nvim'
     Plug 'nvim-telescope/telescope.nvim'
 
-    " Harpoon
-    Plug 'ThePrimeagen/harpoon'
-
     " Color Theme
     Plug 'ray-x/aurora'
 
