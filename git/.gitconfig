@@ -66,6 +66,9 @@
 	# force push with lease
 	punch = !"git push --force-with-lease"
 
+	# delete all files that are on .gitignore
+	purge = clean -Xdf
+
 	# delete everything but the git folder
 	empty = !sh -c 'find . -path ./.git -prune -o -exec rm -rf {} + 2> /dev/null'
 
