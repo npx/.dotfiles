@@ -9,7 +9,7 @@ require("lualine").setup({
         disabled_filetypes = {statusline = {}, winbar = {}},
         ignore_focus = {},
         always_divide_middle = true,
-        globalstatus = false,
+        globalstatus = true,
         refresh = {statusline = 200, tabline = 1000, winbar = 1000}
     },
     sections = {
@@ -28,8 +28,6 @@ require("lualine").setup({
         lualine_y = {},
         lualine_z = {}
     },
-    tabline = {},
-    winbar = {},
-    inactive_winbar = {}
+    tabline = {lualine_c = {'filename'}}
 })
 

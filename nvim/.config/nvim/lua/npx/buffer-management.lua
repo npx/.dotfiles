@@ -16,16 +16,16 @@ local autocmd = function(events, callback)
 end
 
 -- Tracking Buffers
-local track = function(buf) vim.api.nvim_buf_set_var(buf, BUF_TRACKED, true) end
+local function track(buf) vim.api.nvim_buf_set_var(buf, BUF_TRACKED, true) end
 
-local untrack = function(buf)
+local function untrack(buf)
     local delete_tracked = function()
         vim.api.nvim_buf_del_var(buf, BUF_TRACKED)
     end
     pcall(delete_tracked)
 end
 
-local is_tracked = function(buf)
+local function is_tracked(buf)
     local read_tracked = function()
         vim.api.nvim_buf_get_var(buf, BUF_TRACKED)
     end
@@ -56,23 +56,20 @@ end
 -- Autocommands
 autocmd({"BufWritePost"}, function() track(0) end)
 
-autocmd({"BufHidden"}, function()
-    if should_kill(0) then
-        local buf = vim.api.nvim_get_current_buf()
-        mark_for_kill(buf)
-    end
-end)
-
-autocmd({"BufEnter"}, function() kill() end)
-
 -- Keymap: ALT+JK
 vim.keymap.set('n', '∆', cmd("bp"), {desc = 'Buffer Previous'})
 vim.keymap.set('n', '˚', cmd("bn"), {desc = 'Buffer Next'})
 
 local tracked_buffers = function()
-    local listed = vim.tbl_filter(function(buf)
-        return vim.api.nvim_buf_get_option(buf, "buflisted")
+    local current_buffer = vim.api.nvim_get_current_buf()
+
+    local tracked_buffers = vim.tbl_filter(function(buf)
+        local listed = vim.api.nvim_buf_get_option(buf, "buflisted")
+        local tracked = is_tracked(buf)
+        return listed and (tracked or buf == current_buffer)
     end, vim.api.nvim_list_bufs())
+
+    local trimmed = {unpack(tracked_buffers, 1, 3)}
 
     local decorated = vim.tbl_map(function(buf)
         local bufname = vim.api.nvim_buf_get_name(buf)
@@ -98,7 +95,7 @@ local tracked_buffers = function()
         end
 
         return display
-    end, listed)
+    end, trimmed)
 
     local pretty = table.concat(decorated, '')
     return pretty
