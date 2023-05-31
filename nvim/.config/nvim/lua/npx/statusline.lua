@@ -1,24 +1,24 @@
-local buffers = require("npx.buffer-management").tracked_buffers
+local tracked_buffers = require("npx.buffer-management").tracked_buffers_lualine
 
 require("lualine").setup({
     options = {
         icons_enabled = true,
-        theme = 'ayu_mirage',
-        component_separators = {left = '', right = ''},
-        section_separators = {left = '', right = ''},
-        disabled_filetypes = {statusline = {}, winbar = {}},
-        ignore_focus = {},
+        theme = 'everforest',
+        component_separators = {left = '', right = ''},
+        section_separators = {left = '', right = ''},
+        disabled_filetypes = {statusline = {'qf'}, winbar = {}},
+        ignore_focus = {'qf'}, -- TODO check this option
         always_divide_middle = true,
         globalstatus = true,
         refresh = {statusline = 200, tabline = 1000, winbar = 1000}
     },
     sections = {
         lualine_a = {'mode'},
-        lualine_b = {},
-        lualine_c = {buffers},
-        lualine_x = {'fileformat', 'filetype'},
+        lualine_b = {tracked_buffers},
+        lualine_c = {},
+        lualine_x = {},
         lualine_y = {},
-        lualine_z = {'location'}
+        lualine_z = {}
     },
     inactive_sections = {
         lualine_a = {},
@@ -28,6 +28,12 @@ require("lualine").setup({
         lualine_y = {},
         lualine_z = {}
     },
-    tabline = {lualine_c = {'filename'}}
+    tabline = {
+        lualine_b = {'branch'},
+        lualine_c = {'filename'},
+        lualine_x = {},
+        lualine_y = {'filetype', 'fileformat'},
+        lualine_z = {'location'}
+    }
 })
 
