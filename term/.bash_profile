@@ -135,3 +135,6 @@ export PATH=$PATH:/Users/ybaron/bin
 
 # parrot
 alias party="ssh ssh.caarlos0.dev -p 2225"
+
+# big files
+alias ducks='du -cks -- * | sort -rn | head'
