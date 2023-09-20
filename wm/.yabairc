@@ -1,44 +1,73 @@
-sudo yabai --load-sa
+# script injection
 yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+# focus window under cursor
+yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
+yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
 
 # global settings
-yabai -m config mouse_follows_focus          off
-yabai -m config window_placement             second_child
-yabai -m config window_topmost               off
-yabai -m config window_shadow                off
-yabai -m config window_opacity               off
+yabai -m config mouse_follows_focus off
+yabai -m config window_placement second_child
+yabai -m config window_topmost off
+yabai -m config window_shadow off
+yabai -m config window_opacity off
 
-yabai -m config active_window_opacity        1.0
-yabai -m config normal_window_opacity        1.0
-yabai -m config window_border                off
-yabai -m config window_border_width          0
-yabai -m config active_window_border_color   0xff000000
-yabai -m config normal_window_border_color   0xff000000
-yabai -m config insert_feedback_color        0xffd75f5f
-yabai -m config split_ratio                  0.50
-yabai -m config auto_balance                 off
-yabai -m config mouse_modifier               fn
-yabai -m config mouse_action1                move
-yabai -m config mouse_action2                resize
-yabai -m config mouse_drop_action            swap
+yabai -m config active_window_opacity 1.0
+yabai -m config normal_window_opacity 1.0
+yabai -m config window_border off
+yabai -m config window_border_width 0
+yabai -m config active_window_border_color 0xff000000
+yabai -m config normal_window_border_color 0xff000000
+yabai -m config insert_feedback_color 0xffd75f5f
+yabai -m config split_ratio 0.50
+yabai -m config auto_balance off
+yabai -m config mouse_modifier fn
+yabai -m config mouse_action1 move
+yabai -m config mouse_action2 resize
+yabai -m config mouse_drop_action swap
 
 # general space settings
-yabai -m config layout                       bsp
-yabai -m config top_padding                  10
-yabai -m config bottom_padding               10
-yabai -m config left_padding                 10
-yabai -m config right_padding                10
-yabai -m config window_gap                   10
-# yabai -m config external_bar                 all:0:30
+yabai -m config layout bsp
+yabai -m config top_padding 10
+yabai -m config bottom_padding 10
+yabai -m config left_padding 10
+yabai -m config right_padding 11
+yabai -m config window_gap 10
+
+# attach current window to bottom the the screen
+# remember window id, react to window close to unset the space
+#
+# --move abs|rel:<dx>:<dy>
+# If type is rel the selected window is moved by dx pixels horizontally and dy pixels vertically, otherwise dx and dy will become its new position.
+#
+# --resize top|left|bottom|right|top_left|top_right|bottom_right|bottom_left|abs:<dx>:<dy>
+# Resize the selected window by moving the given handle dx pixels horizontally and dy pixels vertically. If handle is abs the new size will be dx width and dy height and cannot be used on managed windows.
+#
+# --ratio rel|abs:<dr>
+# If type is rel the split ratio of the selected window is changed by dr, otherwise dr will become the new split ratio. A positive/negative delta will increase/decrease the size of the left-child.
+#
+function yabai_attach() {
+   yabai -m config external_bar all:0:300
+   yabai -m window --toggle topmost
+   yabai -m window --toggle sticky
+
+   # yabai -m window --move abs:100:200
+   # yabai -m window --resize abs:500:800
+
+   # move focused window to occupy the left two thirds of the screen.
+   # <rows>:<cols>:<start-x>:<start-y>:<width>:<height>
+   # yabai -m window --grid 1:3:0:0:2:1
+   # yabai -m window --grid 5:1:0:4:1:1
+}
 
 # space system
 # (TODO) investigate handling native fullscreen screens
 
 num_spaces=$(yabai -m query --spaces | jq '. | length')
-while [ $num_spaces -le 6 ]
-do
-    yabai -m space --create
-    ((num_spaces++))
+while [ $num_spaces -le 6 ]; do
+   yabai -m space --create
+   ((num_spaces++))
 done
 
 # spaces
@@ -74,7 +103,10 @@ yabai -m space private --layout bsp
 # (TODO) handle 2nd display for webinars
 # (TODO) handle slides screen for webinars
 
+# Sketchybar Space Switcher
+# (TODO) responsibilities
 sketchybar --trigger yabai_spaces_refresh
+yabai -m signal --add event=display_removed action="sketchybar --trigger yabai_spaces_refresh"
 ~/.config/yabai/space-switch.sh
 
 # rules
@@ -85,15 +117,15 @@ yabai -m rule --add app="^App Store$" manage=off
 yabai -m rule --add app="^Finder$" title="^Bin$" manage=off
 yabai -m rule --add app="^Parallels Desktop$" title="^Control Center$" manage=off
 yabai -m rule --add app="^Harvest$" manage=off
-yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="^Unity$" manage=off
+yabai -m rule --add app="^Google Chrome$" title="Picture in Picture" manage=off
 
 yabai -m rule --add app="^Alacritty$" space=^term
 
 yabai -m rule --add app="^Slack$" space=^company
 
 yabai -m rule --add app="^Microsoft Teams$" space=comm
-yabai -m rule --add app="^zoom.us$" space=^comm
+yabai -m rule --add app="^zoom.us$" space=comm
 
 yabai -m rule --add app="^Discord$" space=^private
-
