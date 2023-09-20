@@ -169,6 +169,5 @@ let g:htl_css_templates = 1
 " disable unused providers
 let g:loaded_ruby_provider = 0
 let g:loaded_perl_provider = 0
-let g:loaded_python3_provider = 0
 " keep clear console clean 
 autocmd CursorHold * echon ''
