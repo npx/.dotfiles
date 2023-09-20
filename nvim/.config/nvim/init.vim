@@ -61,7 +61,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-telescope/telescope.nvim'
 
     " Color Theme
-    Plug 'ray-x/aurora'
+    Plug 'sainnhe/everforest'
 
     " Automatically set tabwidth
     Plug 'tpope/vim-sleuth'
@@ -121,10 +121,17 @@ set termguicolors
 lua require("npx")
 
 " set theme
-let g:aurora_italic = 1          " italic
-let g:aurora_transparent = 1     " transparent
-let g:aurora_bold = 1            " bold
-colorscheme aurora
+" Available values: 'hard', 'medium'(default), 'soft'
+let g:everforest_background = 'medium'
+let g:everforest_better_performance = 1
+let g:everforest_enable_italic=1
+let g:everforest_transparent_background=0
+let g:everforest_dim_inactive_windows=0
+let g:everforest_sign_column_background='none' " 'none', 'grey' 
+let g:everforest_ui_contrast='low' " 'low', 'high'
+let g:everforest_disable_terminal_colors=1
+set bg=dark
+colorscheme everforest
 
 " use <Space> as leader
 let mapleader = " "
