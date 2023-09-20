@@ -5,6 +5,9 @@ syntax on
 set exrc
 " keep the blocky cursor
 " set guicursor=
+" highlight line the cursor is in
+set cursorline
+set cursorlineopt=screenline
 " show line numbers
 set number
 set relativenumber
