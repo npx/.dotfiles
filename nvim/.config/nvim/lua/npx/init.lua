@@ -28,3 +28,7 @@ vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 
 -- show virtual_text
 vim.diagnostic.config({virtual_text = true})
+
+-- buffer to tab / tab close
+vim.keymap.set("n", "<leader>tt", "<cmd>silent tabnew %<CR>")
+vim.keymap.set("n", "<leader>tb", "<cmd>silent tabclose<CR>")
