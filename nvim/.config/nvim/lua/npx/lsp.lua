@@ -29,6 +29,8 @@ mason.configure("eslint", {
     end
 })
 
+mason.configure("theme_check", {root_dir = function() return vim.loop.cwd() end})
+
 mason.configure("angularls", {
     on_attach = function(client)
         client.server_capabilities.renameProvider = false

@@ -20,6 +20,9 @@ PATH="${PATH}:$HOME/.dotnet/tools"
 # personal executables
 PATH="${PATH}:$HOME/.bin"
 
+# ruby
+PATH="/opt/homebrew/opt/ruby/bin:${PATH}"
+
 # nvm
 export NVM_DIR="$HOME/.nvm"
 lazynvm() {
