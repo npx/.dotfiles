@@ -35,7 +35,7 @@ set nobackup
 set scrolloff=8
 set sidescrolloff=8
 " rulers
-set colorcolumn=100
+set colorcolumn=100,140
 " keep a side column for addons
 set signcolumn=no
 " more space for displaying messages
