@@ -6,6 +6,9 @@
 	d = diff
 	ds = diff --staged
 
+	# diffview with nvim
+	dv = "! args=$@; shift $#; nvim -c \"DiffviewOpen $args\""
+
 	# helper for fzf multi select with alt-enter
 	fuzzy-- = !"FZF_DEFAULT_OPTS=\"--multi --bind 'alt-enter:select-all+accept'\" fzf -1"
 

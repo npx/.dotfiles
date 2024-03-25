@@ -83,6 +83,7 @@ call plug#begin('~/.vim/plugged')
     " Git
     Plug 'tpope/vim-fugitive'
     Plug 'junegunn/gv.vim'
+    Plug 'sindrets/diffview.nvim'
 
     " Formatting
     Plug 'sbdchd/neoformat'
