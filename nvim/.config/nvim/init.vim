@@ -66,6 +66,9 @@ call plug#begin('~/.vim/plugged')
     " Automatically set tabwidth
     Plug 'tpope/vim-sleuth'
 
+    " Buffer management
+    Plug 'dzfrias/arena.nvim'
+
     " LSP
     Plug 'williamboman/mason.nvim'
     Plug 'williamboman/mason-lspconfig.nvim'

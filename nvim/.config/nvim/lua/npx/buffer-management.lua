@@ -70,7 +70,7 @@ local function goto_nth_tracked(n)
 end
 
 -- Autocommands
-autocmd({"BufWritePost"}, function() track(0) end)
+-- autocmd({"BufWritePost"}, function() track(0) end)
 
 -- Keymap: ALT+JKL
 vim.keymap.set('n', '∆', goto_nth_tracked(1),
@@ -123,5 +123,10 @@ vim.keymap.set('n', 'Q',
                function() print(vim.inspect(tracked_buffers_lualine())) end)
 
 -- Module
-return {tracked_buffers_lualine = tracked_buffers_lualine}
+return {
+    tracked_buffers_lualine = tracked_buffers_lualine,
+    track = track,
+    untrack = untrack,
+    is_tracked = is_tracked
+}
 

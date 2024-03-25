@@ -2,6 +2,7 @@
 vim.g.mapleader = ' ';
 
 require("npx.auto-complete")
+require("npx.arena")
 require("npx.buffer-management")
 require("npx.comment")
 require("npx.fterm")
