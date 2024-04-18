@@ -125,7 +125,9 @@ yabai -m rule --add app="^Alacritty$" space=^term
 
 yabai -m rule --add app="^Slack$" space=^company
 
-yabai -m rule --add app="^Microsoft Teams$" space=comm
+yabai -m rule --add title="Microsoft Teams" space=comm
+yabai -m rule --add title="Microsoft Teams Notification" window_border=off
+yabai -m rule --add title="Microsoft Teams Notification" manage=off
 yabai -m rule --add app="^zoom.us$" space=comm
 
 yabai -m rule --add app="^Discord$" space=^private
