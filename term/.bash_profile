@@ -23,6 +23,11 @@ PATH="${PATH}:$HOME/.bin"
 # ruby
 PATH="/opt/homebrew/opt/ruby/bin:${PATH}"
 
+# alacritty
+function fs() {
+  alacritty msg config font.size="${1:-18}"
+}
+
 # nvm
 export NVM_DIR="$HOME/.nvm"
 lazynvm() {
