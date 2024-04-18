@@ -4,6 +4,7 @@ vim.g.mapleader = ' ';
 require("npx.auto-complete")
 require("npx.arena")
 require("npx.buffer-management")
+require("npx.chatgpt")
 require("npx.comment")
 require("npx.fterm")
 require("npx.lsp")

@@ -91,6 +91,9 @@ call plug#begin('~/.vim/plugged')
     " Formatting
     Plug 'sbdchd/neoformat'
 
+    " ChatGPT
+    Plug 'robitx/gp.nvim'
+
     " Misc
     Plug 'junegunn/goyo.vim'
     Plug 'kylechui/nvim-surround'
