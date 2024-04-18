@@ -33,6 +33,7 @@ mason.configure("theme_check", {root_dir = function() return vim.loop.cwd() end}
 
 mason.configure("angularls", {
     on_attach = function(client)
+        vim.cmd [[compiler angular]]
         client.server_capabilities.renameProvider = false
     end
 })
