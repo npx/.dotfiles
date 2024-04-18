@@ -33,3 +33,11 @@ vim.diagnostic.config({virtual_text = true})
 -- buffer to tab / tab close
 vim.keymap.set("n", "<leader>tt", "<cmd>silent tabnew %<CR>")
 vim.keymap.set("n", "<leader>tb", "<cmd>silent tabclose<CR>")
+
+-- splits
+vim.keymap.set("n", "<leader>sv", "<cmd>silent vsplit<CR>")
+vim.keymap.set("n", "<leader>sh", "<cmd>silent split<CR>")
+
+-- close
+vim.keymap.set("n", "<leader>q", "<cmd>silent q<CR>")
+vim.keymap.set("n", "<leader>Q", "<cmd>silent q!<CR>")
