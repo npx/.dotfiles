@@ -4,8 +4,6 @@ local arena = require("arena")
 arena.setup({
     max_items = nil,
 
-    ignore_current = true,
-
     keybinds = {
         ["p"] = arena.action(function(bufnr)
             if (bm.is_tracked(bufnr)) then
@@ -19,4 +17,4 @@ arena.setup({
     }
 });
 
-vim.keymap.set("n", "<Leader>fb", "<cmd>ArenaOpen<cr>")
+vim.keymap.set('n', '…', "<cmd>ArenaToggle<cr>", {desc = 'ToggleArena'})
