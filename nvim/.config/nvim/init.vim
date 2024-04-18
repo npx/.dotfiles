@@ -33,7 +33,7 @@ set noswapfile
 set nobackup
 " when scrolling keep distance to edge of screen
 set scrolloff=8
-set sidescrolloff=8
+set sidescrolloff=999
 " rulers
 set colorcolumn=100,140
 " keep a side column for addons
