@@ -18,6 +18,8 @@ require("nvim-autopairs").setup()
 
 -- Setup Oil (buffer-like file managament)
 require("oil").setup()
+vim.keymap.set("n", "<leader>o", "<cmd>silent Oil<CR>")
+vim.keymap.set("n", "<leader>O", "<cmd>silent vsplit | Oil<CR>")
 
 -- Setup NetRW
 vim.g.netrw_browse_split = 0
