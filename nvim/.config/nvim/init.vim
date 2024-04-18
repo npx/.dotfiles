@@ -175,3 +175,5 @@ let g:loaded_ruby_provider = 0
 let g:loaded_perl_provider = 0
 " keep clear console clean 
 autocmd CursorHold * echon ''
+" dont jump when selecting with *
+nnoremap <silent> * :let @/= '\<' . expand('<cword>') . '\>' <bar> set hls <cr>
