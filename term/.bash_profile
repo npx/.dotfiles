@@ -27,7 +27,7 @@ PATH="/opt/homebrew/opt/ruby/bin:${PATH}"
 
 # alacritty
 function fs() {
-  alacritty msg config font.size="${1:-18}"
+  alacritty msg config --window-id -1 font.size="${1:-18}"
 }
 
 # nvm
