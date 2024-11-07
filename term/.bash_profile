@@ -16,6 +16,7 @@ bindkey -s ^f "tmux-sessionizer\n"
 PATH="${PATH}:/usr/local/sbin"
 
 # dotnet tools
+export DOTNET_ROOT="/opt/homebrew/opt/dotnet/libexec"
 PATH="${PATH}:$HOME/.dotnet/tools"
 
 # personal executables
