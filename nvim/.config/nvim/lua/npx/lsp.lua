@@ -18,10 +18,15 @@ vim.lsp.handlers["textDocument/hover"] =
 
 -- ESLint
 mason.configure("eslint", {
+    filetypes = {
+        'javascript', 'javascriptreact', 'javascript.jsx', 'typescript',
+        'typescriptreact', 'typescript.tsx', 'vue', 'svelte', 'astro', 'html'
+    },
     on_new_config = function(config, new_root_dir)
         -- The "workspaceFolder" is a VSCode concept. It limits how far the
         -- server will traverse the file system when locating the ESLint config
         -- file (e.g., .eslintrc).
+
         config.settings.workspaceFolder = {
             uri = vim.loop.cwd(),
             name = vim.fn.fnamemodify(new_root_dir, ":t")
