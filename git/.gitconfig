@@ -87,8 +87,8 @@
 	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
 
 	# proxy for UTM
-	prox = !"git config http.proxy http://192.168.64.2:3128"
-	proxoff = config --unset http.proxy
+	prox = !"git config $1 http.proxy http://192.168.64.2:3128"
+	proxoff = !"git config $1 --unset http.proxy"
 [pager]
 	branch = false
 [pull]
