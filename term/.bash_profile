@@ -4,6 +4,7 @@ export WDSM_NPM_TOKEN="unknown"
 export WORK="$HOME/Work"
 export PROJECTS="$HOME/Private/github.com/npx"
 export DOTFILES="$PROJECTS/.dotfiles"
+export SLIDES="${HOME}/Work/Materials/slides"
 
 alias ww="cd $WORK"
 alias pp="cd $PROJECTS"
@@ -146,3 +147,6 @@ alias party="ssh ssh.caarlos0.dev -p 2225"
 
 # big files
 alias ducks='du -cks -- * | sort -rn | head'
+
+# marp
+alias slides="marp -p -s --allow-local-files ${SLIDES}"
