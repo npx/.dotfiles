@@ -1,17 +1,7 @@
 -- Set leader before other plugins
 vim.g.mapleader = ' ';
 
-require("npx.auto-complete")
-require("npx.buffer-management")
-require("npx.chatgpt")
-require("npx.comment")
-require("npx.fterm")
-require("npx.lsp")
-require("npx.statusline")
-require("npx.surround")
-require("npx.telescope")
-require("npx.treesitter")
-require("npx.which-key")
+require("npx.lazyvim")
 
 -- Setup Autopairs
 require("nvim-autopairs").setup()

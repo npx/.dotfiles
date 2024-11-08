@@ -127,4 +127,37 @@ return {
   {
     "alvan/vim-closetag",
   },
+
+  -- Add configuration for `cmp` plugin
+  require("npx.auto-complete"),
+
+  -- Add configuration for `buffer-management`
+  require("npx.buffer-management"),
+
+  -- Add configuration for `gp` plugin
+  require("npx.chatgpt"),
+
+  -- Add configuration for `Comment` plugin
+  require("npx.comment"),
+
+  -- Add configuration for `FTerm` plugin
+  require("npx.fterm"),
+
+  -- Add configuration for `lsp` plugin
+  require("npx.lsp"),
+
+  -- Add configuration for `lualine` plugin
+  require("npx.statusline"),
+
+  -- Add configuration for `nvim-surround` plugin
+  require("npx.surround"),
+
+  -- Add configuration for `telescope` plugin
+  require("npx.telescope"),
+
+  -- Add configuration for `nvim-treesitter` plugin
+  require("npx.treesitter"),
+
+  -- Add configuration for `which-key` plugin
+  require("npx.which-key"),
 }
