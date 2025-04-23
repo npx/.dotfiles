@@ -32,6 +32,12 @@ PATH="${PATH}:$HOME/.bin"
 # ruby
 PATH="/opt/homebrew/opt/ruby/bin:${PATH}"
 
+# directory switching
+function d() {
+  local dir=$(dirs -v | fzf --prompt="Select dir> " | awk '{print $2}')
+  [ -n "$dir" ] && cd "${dir/#\~/$HOME}"
+}
+
 # alacritty
 function fs() {
   alacritty msg config --window-id -1 font.size="${1:-18}"
