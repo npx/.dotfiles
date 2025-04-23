@@ -15,3 +15,5 @@ bindkey -v
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 source ~/.bash_profile
+
+eval "$(direnv hook zsh)"
