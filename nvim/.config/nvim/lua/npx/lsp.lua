@@ -48,7 +48,7 @@ local init_options = require("nvim-lsp-ts-utils").init_options;
 init_options['preferences']['organizeImportsIgnoreCase'] = true;
 init_options['preferences']['importModuleSpecifierPreference'] = "relative";
 
-mason.configure("tsserver", {
+mason.configure("ts_ls", {
     capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol
                                                                     .make_client_capabilities()),
     -- Needed for inlayHints. Merge this table with your settings or copy
