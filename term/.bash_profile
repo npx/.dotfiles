@@ -6,6 +6,13 @@ export PROJECTS="$HOME/Private/github.com/npx"
 export DOTFILES="$PROJECTS/.dotfiles"
 export SLIDES="${HOME}/Work/Materials/slides"
 
+# SECRETS
+if [ -f "$HOME/.secrets" ]; then
+  source "$HOME/.secrets"
+fi
+
+export HTTP_PROXY=http://192.168.64.2:3128
+
 alias ww="cd $WORK"
 alias pp="cd $PROJECTS"
 alias df="cd $DOTFILES"
