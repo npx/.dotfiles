@@ -131,18 +131,18 @@ function git-status() {
 
 # Chrome
 function chrome_work() {
-  yabai -m space --focus company
+  aerospace workspace 2-company
   # open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Work
   open -na 'Google Chrome'
 }
 
 function chrome_dev() {
-  yabai -m space --focus build
+  aerospace workspace 5-build
   open -na 'Google Chrome'
 }
 
 function chrome_private() {
-  yabai -m space --focus private
+  aerospace workspace 7-private
   open -na 'Google Chrome'
   # open -na 'Google Chrome' --args --user-data-dir=$HOME/Documents/Chrome-Private
 }

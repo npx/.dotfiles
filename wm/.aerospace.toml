@@ -1,0 +1,160 @@
+# Place a copy of this config to ~/.aerospace.toml
+# After that, you can edit ~/.aerospace.toml to your liking
+
+# You can use it to add commands that run after login to macOS user session.
+# 'start-at-login' needs to be 'true' for 'after-login-command' to work
+# Available commands: https://nikitabobko.github.io/AeroSpace/commands
+after-login-command = []
+
+# You can use it to add commands that run after AeroSpace startup.
+# 'after-startup-command' is run after 'after-login-command'
+# Available commands : https://nikitabobko.github.io/AeroSpace/commands
+after-startup-command = ['exec-and-forget sketchybar']
+
+# Notify Sketchybar about workspace change
+exec-on-workspace-change = ['/bin/bash', '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+# Start AeroSpace at login
+start-at-login = true
+
+# Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# See: https://nikitabobko.github.io/AeroSpace/guide#layouts
+# The 'accordion-padding' specifies the size of accordion padding
+# You can set 0 to disable the padding feature
+accordion-padding = 30
+
+# Possible values: tiles|accordion
+default-root-container-layout = 'tiles'
+
+# Possible values: horizontal|vertical|auto
+# 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
+#               tall monitor (anything higher than wide) gets vertical orientation
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus when focused monitor changes
+# Drop it from your config, if you don't like this behavior
+# See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
+# See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
+# Fallback value (if you omit the key): on-focused-monitor-changed = []
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
+# Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
+# Also see: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
+automatically-unhide-macos-hidden-apps = false
+
+# Possible values: (qwerty|dvorak|colemak)
+# See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
+[key-mapping]
+    preset = 'qwerty'
+
+# Gaps between windows (inner-*) and between monitor edges (outer-*).
+# Possible values:
+# - Constant:     gaps.outer.top = 8
+# - Per monitor:  gaps.outer.top = [{ monitor.main = 16 }, { monitor."some-pattern" = 32 }, 24]
+#                 In this example, 24 is a default value when there is no match.
+#                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
+#                 See:
+#                 https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+[gaps]
+    inner.horizontal = 8
+    inner.vertical =   8
+    outer.left =       0
+    outer.bottom =     0
+    outer.top =        0
+    outer.right =      0
+
+# 'main' binding mode declaration
+# See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
+# 'main' binding mode must be always presented
+# Fallback value (if you omit the key): mode.main.binding = {}
+[mode.main.binding]
+
+    # All possible keys:
+    # - Letters.        a, b, c, ..., z
+    # - Numbers.        0, 1, 2, ..., 9
+    # - Keypad numbers. keypad0, keypad1, keypad2, ..., keypad9
+    # - F-keys.         f1, f2, ..., f20
+    # - Special keys.   minus, equal, period, comma, slash, backslash, quote, semicolon,
+    #                   backtick, leftSquareBracket, rightSquareBracket, space, enter, esc,
+    #                   backspace, tab, pageUp, pageDown, home, end, forwardDelete,
+    #                   sectionSign (ISO keyboards only, european keyboards only)
+    # - Keypad special. keypadClear, keypadDecimalMark, keypadDivide, keypadEnter, keypadEqual,
+    #                   keypadMinus, keypadMultiply, keypadPlus
+    # - Arrows.         left, down, up, right
+
+    # All possible modifiers: cmd, alt, ctrl, shift
+
+    # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
+    alt-shift-1 = 'move-node-to-workspace --focus-follows-window 1-default'
+    alt-shift-2 = 'move-node-to-workspace --focus-follows-window 2-company'
+    alt-shift-3 = 'move-node-to-workspace --focus-follows-window 3-communication'
+    alt-shift-4 = 'move-node-to-workspace --focus-follows-window 4-term'
+    alt-shift-5 = 'move-node-to-workspace --focus-follows-window 5-build'
+    alt-shift-6 = 'move-node-to-workspace --focus-follows-window 6-vm'
+    alt-shift-7 = 'move-node-to-workspace --focus-follows-window 7-private'
+
+    # change layout of desktop
+    ctrl-shift-alt-t = 'layout floating'
+    ctrl-shift-alt-g = 'layout accordion horizontal vertical'
+    ctrl-shift-alt-b = 'layout tiles horizontal vertical'
+
+    # cycle through windows
+    ctrl-shift-alt-j = ['focus left', 'focus up']
+    ctrl-shift-alt-k = ['focus right', 'focus down']
+
+    # jump to spaces
+    ctrl-shift-alt-q = 'workspace --auto-back-and-forth 1-default'
+    ctrl-shift-alt-a = 'workspace --auto-back-and-forth 2-company'
+    ctrl-shift-alt-s = 'workspace --auto-back-and-forth 3-communication'
+    ctrl-shift-alt-d = 'workspace --auto-back-and-forth 4-term'
+    ctrl-shift-alt-f = 'workspace --auto-back-and-forth 5-build'
+    ctrl-shift-alt-y = 'workspace --auto-back-and-forth 7-private'
+
+    # make window take up all space 
+    ctrl-shift-alt-v = 'fullscreen'
+
+    # open Terminal .
+    ctrl-shift-alt-period = 'exec-and-forget open -n "/Applications/Alacritty.app"'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+    alt-shift-semicolon = 'mode service'
+
+# 'service' binding mode declaration.
+# See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
+[mode.service.binding]
+    r = ['reload-config', 'mode main']
+
+    q = ['move-node-to-workspace 1-default', 'mode main']
+    a = ['move-node-to-workspace 2-company', 'mode main']
+    s = ['move-node-to-workspace 3-communication', 'mode main']
+    d = ['move-node-to-workspace 4-term', 'mode main']
+    f = ['move-node-to-workspace 5-build', 'mode main']
+    esc = ['move-node-to-workspace 7-private', 'mode main']
+
+# Move apps to specific workspaces
+[[on-window-detected]]
+if.app-id = 'org.alacritty'
+run = 'move-node-to-workspace 4-term'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace 2-company'
+
+[[on-window-detected]]
+if.window-title-regex-substring = 'Microsoft Teams'
+run = 'move-node-to-workspace 3-communication'
+
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
+run = 'move-node-to-workspace 3-communication'
+
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = 'move-node-to-workspace 7-private'

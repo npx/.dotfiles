@@ -1,39 +1,52 @@
 #!/usr/bin/env bash
 
+sketchybar --add event aerospace_workspace_change
+
 height=40
 
-############## BAR ############## 
-sketchybar -m --bar height=$height   \
-                    width=$height    \
-                    position=left    \
-                    y_offset=10      \
-                    padding_left=0   \
-                    padding_right=15 \
-                    margin=5         \
-                    sticky=on        \
+############## BAR ##############
+bar=(
+                    height=$height
+                    position=left
+                    y_offset=10
+                    margin=5
                     color=0x00000000
+)
+sketchybar --bar "${bar[@]}"
 
-############## GLOBAL DEFAULTS ############## 
-sketchybar -m --default updates=when_shown                    \
-                        drawing=on                            \
-                        icon.font="FiraCode Nerd Font:Regular:24.0"  \
-                        icon.color=0xffa8a8a8                 \
-                        label.font="FiraCode Nerd Font:Regular:24.0" \
-                        label.color=0xffa8a8a8
+############## GLOBAL DEFAULTS ##############
+defaults=(
+                    updates=when_shown
+                    drawing=on
+                    background.drawing=on
+                    background.height=$height
+                    icon.font="FiraCode Nerd Font:Regular:24.0"
+                    icon.align=center
+                    icon.color=0xffa8a8a8
+                    icon.highlight_color=0xf2cd2e4c
+                    label.drawing=off
 
-############## SPACES PLUGIN  ############## 
-~/.config/sketchybar/plugins/yabai-spaces.sh
+)
+sketchybar --default "${defaults[@]}"
 
-############## CENTER ITEMS ############## 
-# sketchybar -m --add event refresh_windows \
-#               --add item windows center   \
-#               --set windows script="~/.config/sketchybar/plugins/windows.sh" \
-#               --subscribe windows front_app_switched space_change refresh_windows
-#
-# yabai -m signal --add event=space_changed label=windows action="sketchybar --trigger refresh_windows"
-# yabai -m signal --add event=window_focused label=windows2 action="sketchybar --trigger refresh_windows"
+############## SPACES ##############
+declare -A icons
+icons["1-default"]=󰍹
+icons["2-company"]=
+icons["3-communication"]=󱩛
+icons["4-term"]=
+icons["5-build"]=
+icons["6-vm"]=
+icons["7-private"]=
+
+for sid in $(aerospace list-workspaces --all); do
+                    sketchybar --add item space.$sid right \
+                                        --subscribe space.$sid aerospace_workspace_change \
+                                        --set space.$sid \
+                                        icon=${icons[$sid]-} \
+                                        click_script="aerospace workspace $sid" \
+                                        script="$CONFIG_DIR/plugins/aerospace-spaces.sh $sid"
+done
 
 ############## FINALIZING THE SETUP ##############
 sketchybar -m --update
-
-echo "sketchybar configuration loaded.."
