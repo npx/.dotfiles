@@ -1,5 +1,5 @@
 require("gp").setup({
-    openai_api_key = {"cat", "~/.gpt4"},
+    openai_api_key = {"cat", "/Users/ybaron/.gpt4"},
     agents = {
         {
             name = "ChatGPT4",
