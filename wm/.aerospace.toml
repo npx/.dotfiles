@@ -91,15 +91,6 @@ automatically-unhide-macos-hidden-apps = false
 
     # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
 
-    # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
-    alt-shift-1 = 'move-node-to-workspace --focus-follows-window 1-default'
-    alt-shift-2 = 'move-node-to-workspace --focus-follows-window 2-company'
-    alt-shift-3 = 'move-node-to-workspace --focus-follows-window 3-communication'
-    alt-shift-4 = 'move-node-to-workspace --focus-follows-window 4-term'
-    alt-shift-5 = 'move-node-to-workspace --focus-follows-window 5-build'
-    alt-shift-6 = 'move-node-to-workspace --focus-follows-window 6-vm'
-    alt-shift-7 = 'move-node-to-workspace --focus-follows-window 7-private'
-
     # change layout of desktop
     ctrl-shift-alt-t = 'layout floating'
     ctrl-shift-alt-g = 'layout accordion horizontal vertical'
@@ -136,7 +127,11 @@ automatically-unhide-macos-hidden-apps = false
     s = ['move-node-to-workspace 3-communication', 'mode main']
     d = ['move-node-to-workspace 4-term', 'mode main']
     f = ['move-node-to-workspace 5-build', 'mode main']
+    w = ['move-node-to-workspace 6-vm', 'mode main']
     esc = ['move-node-to-workspace 7-private', 'mode main']
+
+    l = ['join-with right', 'mode main']
+
 
 # Move apps to specific workspaces
 [[on-window-detected]]
