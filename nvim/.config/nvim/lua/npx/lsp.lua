@@ -17,7 +17,7 @@ vim.lsp.handlers["textDocument/hover"] =
     vim.lsp.with(vim.lsp.handlers.hover, {border = "rounded"})
 
 -- ESLint
-mason.configure("eslint", {
+vim.lsp.config("eslint", {
     filetypes = {
         'javascript', 'javascriptreact', 'javascript.jsx', 'typescript',
         'typescriptreact', 'typescript.tsx', 'vue', 'svelte', 'astro', 'html'
@@ -34,9 +34,9 @@ mason.configure("eslint", {
     end
 })
 
-mason.configure("theme_check", {root_dir = function() return vim.loop.cwd() end})
+vim.lsp.config("theme_check", {root_dir = function() return vim.loop.cwd() end})
 
-mason.configure("angularls", {
+vim.lsp.config("angularls", {
     on_attach = function(client)
         vim.cmd [[compiler angular]]
         client.server_capabilities.renameProvider = false
@@ -48,7 +48,7 @@ local init_options = require("nvim-lsp-ts-utils").init_options;
 init_options['preferences']['organizeImportsIgnoreCase'] = true;
 init_options['preferences']['importModuleSpecifierPreference'] = "relative";
 
-mason.configure("ts_ls", {
+vim.lsp.config("ts_ls", {
     capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol
                                                                     .make_client_capabilities()),
     -- Needed for inlayHints. Merge this table with your settings or copy
@@ -120,7 +120,7 @@ mason.configure("ts_ls", {
 -- C# (Omnisharp)
 local pid = vim.fn.getpid()
 local omnisharp_bin = "/Users/ybaron/omnisharp/run"
-mason.configure("omnisharp", {
+vim.lsp.config("omnisharp", {
     cmd = {omnisharp_bin, "--languageserver", "--hostPID", tostring(pid)},
     root_dir = require("lspconfig").util.root_pattern("*.csproj", "*.sln"),
     capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol
@@ -128,8 +128,8 @@ mason.configure("omnisharp", {
 })
 
 -- Lua
-mason.configure("lua_ls",
-                {settings = {Lua = {diagnostics = {globals = {"vim"}}}}})
+vim.lsp.config("lua_ls",
+               {settings = {Lua = {diagnostics = {globals = {"vim"}}}}})
 
 -- auto setup the rest
 mason.setup()

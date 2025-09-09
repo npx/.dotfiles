@@ -13,7 +13,7 @@ function M.configure(lspname, config) settings[lspname] = setupLsp(config) end
 function M.setup()
     require("mason").setup()
     require("mason-lspconfig").setup()
-    require("mason-lspconfig").setup_handlers(settings)
+    -- require("mason-lspconfig").setup_handlers(settings)
 end
 
 return M
