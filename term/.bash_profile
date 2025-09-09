@@ -11,7 +11,7 @@ if [ -f "$HOME/.secrets" ]; then
   source "$HOME/.secrets"
 fi
 
-export HTTP_PROXY=http://192.168.64.2:3128
+# export HTTP_PROXY=http://192.168.64.2:3128
 
 alias ww="cd $WORK"
 alias pp="cd $PROJECTS"
