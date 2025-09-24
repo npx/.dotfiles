@@ -92,7 +92,7 @@ automatically-unhide-macos-hidden-apps = false
     # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
 
     # change layout of desktop
-    ctrl-shift-alt-t = 'layout floating'
+    # ctrl-shift-alt-t = 'layout floating'
     ctrl-shift-alt-g = 'layout accordion horizontal vertical'
     ctrl-shift-alt-b = 'layout tiles horizontal vertical'
 
