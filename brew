@@ -1,9 +1,14 @@
 direnv
+docker-compose
 felixkratz/formulae/sketchybar
 fzf
 jq
+luarocks
+marp-cli
 neovim
 nvm
+ripgrep
 stow
 tmux
 tree-sitter-cli
+watch
