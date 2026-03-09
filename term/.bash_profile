@@ -2,6 +2,7 @@ export WDSM_NPM_TOKEN="unknown"
 
 # MY FOLDERS
 export WORK="$HOME/Work"
+export PRIVATE="$HOME/Private"
 export PROJECTS="$HOME/Private/github.com/npx"
 export DOTFILES="$PROJECTS/.dotfiles"
 export SLIDES="${HOME}/Work/Materials/slides"
@@ -125,8 +126,11 @@ function webinar() {
 function git-watch() {
   watch -ct -n1 git --no-pager log --color --all --oneline --decorate --graph
 }
+function git-watch1() {
+  watch -ct -n1 git lgw
+}
 function git-status() {
-  watch -ct -n1 git -c color.status=always --no-optional-locks status
+  watch -ct -n1 git -c color.status=always --no-optional-locks status -s --show-stash
 }
 
 # Chrome
