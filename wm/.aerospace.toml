@@ -129,7 +129,7 @@ automatically-unhide-macos-hidden-apps = false
     f = ['move-node-to-workspace 5-build', 'mode main']
     w = ['move-node-to-workspace 6-vm', 'mode main']
     esc = ['move-node-to-workspace 7-private', 'mode main']
-
+    z = 'move-workspace-to-monitor --wrap-around next'
     l = ['join-with right', 'mode main']
 
 
