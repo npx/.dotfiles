@@ -39,7 +39,12 @@
 		$cmd; \
 	}; f"
 
-	lg = !"git lg0-specific"
+	lg = "!f() { \
+		refs=HEAD; \
+		up=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) && refs=\"$refs $up\"; \
+		git rev-parse --verify --quiet refs/stash >/dev/null && refs=\"$refs refs/stash\"; \
+		git lg0-specific $refs; \
+	}; f"
 	lgw = !"git lg0-specific HEAD refs/stash"
 	lg0 = !"git lg0-specific --all --exclude=refs/stash"
 	lg1 = !"git lg1-specific --all"
