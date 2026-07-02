@@ -52,6 +52,8 @@ automatically-unhide-macos-hidden-apps = false
 [key-mapping]
     preset = 'qwerty'
 
+    key-notation-to-key-code = { para = 'sectionSign' }
+
 # Gaps between windows (inner-*) and between monitor edges (outer-*).
 # Possible values:
 # - Constant:     gaps.outer.top = 8
@@ -106,6 +108,7 @@ automatically-unhide-macos-hidden-apps = false
     ctrl-shift-alt-s = 'workspace --auto-back-and-forth 3-communication'
     ctrl-shift-alt-d = 'workspace --auto-back-and-forth 4-term'
     ctrl-shift-alt-f = 'workspace --auto-back-and-forth 5-build'
+    ctrl-shift-alt-w = 'workspace --auto-back-and-forth 6-vm'
     ctrl-shift-alt-y = 'workspace --auto-back-and-forth 7-private'
 
     # make window take up all space 
@@ -116,6 +119,7 @@ automatically-unhide-macos-hidden-apps = false
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
     alt-shift-semicolon = 'mode service'
+    para = 'mode nokbd'
 
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -132,6 +136,25 @@ automatically-unhide-macos-hidden-apps = false
     z = 'move-workspace-to-monitor --wrap-around next'
     l = ['join-with right', 'mode main']
 
+[mode.nokbd.binding]
+    # change layout of desktop
+    # ctrl-shift-alt-t = 'layout floating'
+    g = ['layout accordion horizontal vertical', 'mode main']
+    b = ['layout tiles horizontal vertical', 'mode main']
+
+    # jump to spaces
+    q = ['workspace --auto-back-and-forth 1-default', 'mode main']
+    a = ['workspace --auto-back-and-forth 2-company', 'mode main']
+    s = ['workspace --auto-back-and-forth 3-communication', 'mode main']
+    d = ['workspace --auto-back-and-forth 4-term', 'mode main']
+    f = ['workspace --auto-back-and-forth 5-build', 'mode main']
+    w = ['workspace --auto-back-and-forth 6-vm', 'mode main']
+    y = ['workspace --auto-back-and-forth 7-private', 'mode main']
+
+    # make window take up all space 
+    v = ['fullscreen', 'mode main']
+
+    para = 'mode main'
 
 # Move apps to specific workspaces
 [[on-window-detected]]
