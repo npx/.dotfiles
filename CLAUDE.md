@@ -44,18 +44,19 @@ The repository includes `tmux-sessionizer` script (bound to Ctrl+F) that:
 ## Architecture
 
 ### Neovim Configuration
-- **Main config**: `nvim/.config/nvim/init.vim` (VimScript with Lua modules)
+- **Main config**: `nvim/.config/nvim/init.lua` (pure Lua; entry point that wires everything together)
 - **Lua modules**: Located in `nvim/.config/nvim/lua/npx/`
-- **Plugins**: Uses vim-plug with plugins like Telescope, Treesitter, LSP, etc.
+- **Plugin manager**: Native `vim.pack` (Neovim 0.12+) — no lazy.nvim/vim-plug. Specs in `lua/npx/pack.lua`, lockfile `nvim-pack-lock.json` (committed). Plugins load eagerly in list order; deps must precede dependents.
+- **Plugins**: Telescope, nvim-treesitter (main branch), nvim-lspconfig + mason/mason-lspconfig, conform.nvim, lualine, oil.nvim, vim-fugitive + diffview.nvim, nvim-surround, nvim-autopairs, nvim-ts-autotag, vim-sleuth, live-preview.nvim
 - **Theme**: Everforest colorscheme
-- **LSP**: Configured with Mason for language server management
+- **LSP**: Mason for server install; per-server config in `after/lsp/*.lua` (vtsls, angularls, eslint, lua_ls, ruff, ty); shared setup in `lua/npx/lsp/`, keymaps in `lua/npx/lsp-keys.lua`
+- **Formatting**: conform.nvim, format-on-save (prettierd/prettier, shfmt); manual `<leader>fm`. Config in `lua/npx/formatting.lua`
 - **Leader key**: Space
 
 Key Neovim features:
-- Lazy loading for NVM when editing JS/TS projects
-- Auto-formatting with Neoformat on save
-- ChatGPT and Claude plugins integrated
-- Custom keybindings for window navigation with arrow keys
+- Angular support: `.component.html` detected as `htmlangular`, angularls attaches to templates, native `ngswitcher.lua` (ts↔html↔css↔spec switching), `:compiler angular`/`nglint`
+- Custom keybindings for window navigation with arrow keys (`<Left>/<Down>/<Up>/<Right>` → split moves)
+- Oil.nvim as file explorer (`<leader>o`), multicursor support
 
 ### Terminal Environment  
 - **Shell**: Bash with custom profile in `term/.bash_profile`
