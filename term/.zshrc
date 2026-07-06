@@ -5,7 +5,7 @@ precmd() { vcs_info }
 zstyle ':vcs_info:git:*' formats '%b '
 
 setopt PROMPT_SUBST
-PROMPT='%F{blue}%~%f %F{red}${vcs_info_msg_0_}%f$ '
+PROMPT='%F{blue}%~%f %F{red}${vcs_info_msg_0_}%f%(1j.%F{yellow}⚙%j %f.)$ '
 
 setopt autocd autopushd pushdignoredups
 
