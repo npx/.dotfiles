@@ -62,6 +62,9 @@ vim.pack.add({
 
   -- Markdown/HTML live preview
   gh("brianhuster/live-preview.nvim"),
+
+  -- Claude Code IDE integration (external claude in a tmux pane)
+  gh("coder/claudecode.nvim"),
 })
 
 -- Plugin configuration (deps already loaded above; order here is for readability).
@@ -79,3 +82,4 @@ require("npx.mason")
 require("npx.lsp")
 require("npx.lsp-keys")
 require("npx.completion")
+require("npx.claudecode")

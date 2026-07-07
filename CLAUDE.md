@@ -47,7 +47,7 @@ The repository includes `tmux-sessionizer` script (bound to Ctrl+F) that:
 - **Main config**: `nvim/.config/nvim/init.lua` (pure Lua; entry point that wires everything together)
 - **Lua modules**: Located in `nvim/.config/nvim/lua/npx/`
 - **Plugin manager**: Native `vim.pack` (Neovim 0.12+) — no lazy.nvim/vim-plug. Specs in `lua/npx/pack.lua`, lockfile `nvim-pack-lock.json` (committed). Plugins load eagerly in list order; deps must precede dependents.
-- **Plugins**: Telescope, nvim-treesitter (main branch), nvim-lspconfig + mason/mason-lspconfig, conform.nvim, lualine, oil.nvim, vim-fugitive + diffview.nvim, nvim-surround, nvim-autopairs, nvim-ts-autotag, vim-sleuth, live-preview.nvim
+- **Plugins**: Telescope, nvim-treesitter (main branch), nvim-lspconfig + mason/mason-lspconfig, conform.nvim, lualine, oil.nvim, vim-fugitive + diffview.nvim, nvim-surround, nvim-autopairs, nvim-ts-autotag, vim-sleuth, live-preview.nvim, claudecode.nvim (external Claude via tmux, `<leader>a*`)
 - **Theme**: Everforest colorscheme
 - **LSP**: Mason for server install; per-server config in `after/lsp/*.lua` (vtsls, angularls, eslint, lua_ls, ruff, ty); shared setup in `lua/npx/lsp/`, keymaps in `lua/npx/lsp-keys.lua`
 - **Formatting**: conform.nvim, format-on-save (prettierd/prettier, shfmt); manual `<leader>fm`. Config in `lua/npx/formatting.lua`
