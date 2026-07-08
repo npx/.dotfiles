@@ -16,10 +16,7 @@ vim.api.nvim_create_autocmd("PackChanged", {
   end,
 })
 
-local function gh(repo)
-  return { src = "https://github.com/" .. repo }
-end
-local function ghv(repo, version)
+local function gh(repo, version)
   return { src = "https://github.com/" .. repo, version = version }
 end
 
@@ -32,7 +29,7 @@ vim.pack.add({
   gh("sainnhe/everforest"),
 
   -- Treesitter (main branch — requires Neovim 0.12)
-  ghv("nvim-treesitter/nvim-treesitter", "main"),
+  gh("nvim-treesitter/nvim-treesitter", "main"),
 
   -- LSP: data provider + installer + bridge
   -- (mason and nvim-lspconfig before mason-lspconfig)
