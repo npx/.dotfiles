@@ -1,0 +1,83 @@
+# i3 config — linux counterpart of wm/.aerospace.toml.
+# Plain dotfile, stow-linked out-of-store: edits apply on $mod+Shift+c reload,
+# no nix rebuild. Installed by services.xserver.windowManager.i3
+# (modules/nixos/desktop.nix); configFile stays null so this file is read live.
+
+set $mod Mod4
+
+font pango:FiraCode Nerd Font 10
+
+# xterm styling (fonts + colors) lives in ~/.Xresources
+exec_always --no-startup-id xrdb -merge ~/.Xresources
+
+# drag floating windows with $mod
+floating_modifier $mod
+
+bindsym $mod+Return exec xterm
+bindsym $mod+d exec dmenu_run
+bindsym $mod+Shift+q kill
+
+# vim-style focus/move (aerospace muscle memory)
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# layout
+bindsym $mod+b split h
+bindsym $mod+v split v
+bindsym $mod+f fullscreen toggle
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+
+# workspaces mirror the aerospace set (wm/.aerospace.toml)
+set $ws1 "1-default"
+set $ws2 "2-company"
+set $ws3 "3-communication"
+set $ws4 "4-term"
+set $ws5 "5-build"
+set $ws6 "6-vm"
+set $ws7 "7-private"
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exec i3-msg exit
+
+mode "resize" {
+  bindsym h resize shrink width 10 px or 10 ppt
+  bindsym j resize grow height 10 px or 10 ppt
+  bindsym k resize shrink height 10 px or 10 ppt
+  bindsym l resize grow width 10 px or 10 ppt
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+bar {
+  position bottom
+  status_command i3status
+  font pango:FiraCode Nerd Font 10
+}

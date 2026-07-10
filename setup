@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# One-time machine setup — the imperative steps nix deliberately does not own.
+# Idempotent: run again anytime, it only does what's missing.
+#   mac:   run after the first darwin-rebuild switch
+#   nixos: run after the first login
+set -euo pipefail
+
+say() { printf '\033[1m==> %s\033[0m\n' "$*"; }
+
+# --- node via fnm — imperative by design; mason's npm LSPs need it -----------
+NODE_MAJOR=24
+if ! command -v fnm >/dev/null; then
+  say "fnm not on PATH — rebuild first (dev profile provides it)"
+  exit 1
+fi
+if fnm ls | grep -q default; then
+  say "node: fnm default already set"
+else
+  say "node: installing v$NODE_MAJOR via fnm"
+  fnm install "$NODE_MAJOR"
+  fnm default "$NODE_MAJOR"
+fi
+
+# --- claude CLI — native installer, self-updates; intentionally not nix ------
+if [ -x "$HOME/.local/bin/claude" ]; then
+  say "claude: already installed"
+else
+  say "claude: installing"
+  curl -fsSL https://claude.ai/install.sh | bash
+fi
+
+# --- ~/.secrets — untracked by design; .bash_profile sources it behind -f ----
+if [ -f "$HOME/.secrets" ]; then
+  say "secrets: ~/.secrets exists"
+else
+  (
+    umask 077
+    cat > "$HOME/.secrets" <<'EOF'
+# machine-local secrets — never tracked, never in nix
+# export WDSM_NPM_TOKEN=...
+EOF
+  )
+  say "secrets: created empty ~/.secrets — fill it from the password manager"
+fi
+
+say "done — still manual (by design):"
+if [ "$(uname)" = Darwin ]; then
+  echo "  - TCC clicks: AeroSpace -> Accessibility"
+  echo "  - App Store sign-in, login items"
+fi
+echo "  - git identity: git asks at the first commit (work vs private)"
+echo "  - mason LSP tools install themselves at first nvim launch"

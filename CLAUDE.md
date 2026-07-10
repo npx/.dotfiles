@@ -4,24 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a personal dotfiles repository managed with GNU Stow for symlinking configuration files. It contains configurations for:
+This is a personal dotfiles repository managed by a nix flake (nix-darwin + home-manager). Config files stay plain files; `modules/home/lib/stow.nix` links them into `$HOME` as out-of-store symlinks (stow-style, live-editable without rebuild). It contains configurations for:
 - **nvim**: Neovim editor with Lua configuration
 - **term**: Terminal environment (bash, alacritty, tmux)
 - **wm**: Window manager (AeroSpace configuration)
 - **git**: Git configuration
-- **lazygit**: Lazygit configuration
 
 ## Key Commands
 
-### Stow Management
+### Nix Rebuild
 ```bash
-# Install all terminal configs to home directory
-stow -t $HOME term
+# apply nix-level changes (packages, modules, casks, defaults)
+sudo darwin-rebuild switch --flake ~/Private/github.com/npx/.dotfiles
 
-# Install specific config module
-stow -t $HOME nvim
-stow -t $HOME wm
+# editing dotfiles (lua/toml/yaml) needs NO rebuild — symlinks point at the live repo
 ```
+Note: brand-new top-level config entries must be `git add`ed before a rebuild sees them.
 
 ### Development Environment
 The bash profile defines several important environment variables and functions:
@@ -82,20 +80,20 @@ Key Neovim features:
 
 ## Package Management
 
-### Homebrew Dependencies
-- **Formulas** (in `brew` file): Core tools like neovim, fzf, tmux, direnv, stow
-- **Casks** (in `brew.casks` file): GUI applications like Alacritty, AeroSpace, fonts
+### Nix + Homebrew
+- CLI tools come from nixpkgs (`modules/home/{core,dev}.nix`)
+- GUI apps are homebrew casks, declared in `modules/darwin/default.nix` (`homebrew.casks`);
+  sketchybar deliberately stays a brew formula (launched by aerospace via PATH)
+- claude CLI is the native installer (`~/.local/bin`, self-updating) — intentionally not nix-managed
 
 ### Node.js Management
-- Uses NVM with lazy loading to improve shell performance
-- Automatically activates NVM when entering directories with package.json
-- Custom wrapper functions for node, npm, npx commands
+- fnm (from nixpkgs); default version + per-project versions in `~/.local/share/fnm`
+- The `.nvmrc` hook fires on `cd` only — tmux-sessionizer panes start inside the project,
+  so run `fnm use` manually when a project pin must win
 
 ## Special Features
 
 ### Presentation Mode
-- `git-demo [name]`: Sets up git demo environment with custom prompt
-- `webinar [name]`: Sets up webinar environment
 - `git-watch`: Live updating git log display
 - `git-status`: Live updating git status display
 
@@ -108,5 +106,3 @@ Functions to open Chrome in specific workspaces:
 ### Development Utilities
 - `ducks`: Show largest files/directories
 - `slides`: Start Marp presentation server for slides
-- Rust and dotnet tool path integration
-- `thefuck` command correction tool integration
