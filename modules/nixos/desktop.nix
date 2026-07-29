@@ -49,5 +49,6 @@ in
   environment.systemPackages = [
     pkgs.xterm
     pkgs.xrdb
+    pkgs.xmodmap # ~/.Xmodmap remaps, applied by i3 exec_always
   ];
 }

@@ -10,6 +10,13 @@ font pango:FiraCode Nerd Font 10
 # xterm styling (fonts + colors) lives in ~/.Xresources
 exec_always --no-startup-id xrdb -merge ~/.Xresources
 
+# key remaps (caps->ctrl, rctrl->;:, ralt->'") — resets on keyboard hotplug,
+# $mod+Shift+c re-applies
+exec_always --no-startup-id xmodmap ~/.Xmodmap
+
+# desktop monitor defaults to 60Hz — force 144 (no-ops when DP-3 is absent)
+exec_always --no-startup-id xrandr --output DP-3 --mode 2560x1440 --rate 143.86
+
 # drag floating windows with $mod
 floating_modifier $mod
 
