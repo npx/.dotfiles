@@ -1,5 +1,3 @@
-export WDSM_NPM_TOKEN="unknown"
-
 # MY FOLDERS
 export WORK="$HOME/Work"
 export PRIVATE="$HOME/Private"
