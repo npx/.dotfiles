@@ -37,7 +37,7 @@ else
     umask 077
     cat > "$HOME/.secrets" <<'EOF'
 # machine-local secrets — never tracked, never in nix
-# export WDSM_NPM_TOKEN=...
+# export NPM_TOKEN=...
 EOF
   )
   say "secrets: created empty ~/.secrets — fill it from the password manager"
