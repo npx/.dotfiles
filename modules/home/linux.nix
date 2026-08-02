@@ -11,5 +11,6 @@
     wl-clipboard # tmux Wayland branch (desktop's gamescope session is Wayland)
     gcc # nvim-treesitter compiles parsers at runtime; macOS has xcode clang, linux has nothing
     python3 # mason installs pypi packages (ruff, ty) via venv+pip; macOS has CLT python
+    pavucontrol # pipewire GUI mixer — per-app + per-device routing
   ];
 }

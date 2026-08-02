@@ -9,6 +9,9 @@
 
   environment.systemPackages = [ pkgs.vim ];
 
+  # mac gets TZ from macOS; NixOS defaults to UTC without this
+  time.timeZone = "Asia/Tokyo";
+
   programs.zsh.enable = true; # required for shell = pkgs.zsh (/etc/shells)
 
   users.users.${user} = {
