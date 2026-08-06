@@ -6,6 +6,9 @@
 
   nixpkgs.hostPlatform = "aarch64-darwin";
 
+  # pre-existing install adopted at stateVersion 6 — never change
+  system.stateVersion = 6;
+
   home-manager.users.${user} = {
     imports = [
       ../../modules/home/core.nix

@@ -1,11 +1,12 @@
 # Gaming desktop — x86_64 NixOS.
+# GPU: AMD Radeon Navi 22 (12G) — amdgpu is in-kernel, Vulkan/RADV comes with
+# mesa defaults; no GPU-specific config needed.
 { user, pkgs, ... }:
 {
   imports = [
     ./hardware-configuration.nix # real: generated 2026-08-02 against nvme0n1
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/gaming.nix # x86_64-only
-    ../../modules/nixos/gpu-amd.nix # Radeon Navi 22 (12G)
   ];
 
   networking.hostName = "desktop"; # = flake attr; nixos-rebuild auto-picks
@@ -18,11 +19,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # The whole 1TB, reclaimed from Windows 2026-08-02. Games and personal data
-  # share ONE filesystem on purpose: the previous split (195G games + 590G NTFS)
-  # could not be grown, because the free space sat *before* /mnt/games on the
-  # platter and ext4 only extends at its end.
-  # 785G until the old install's tail partitions are released, then 931.5G.
+  # The whole 1TB (931.5G), reclaimed from Windows 2026-08-02. Games and
+  # personal data share ONE filesystem on purpose: a split cannot be regrown
+  # when the free space sits before a partition — ext4 only extends at its end.
   fileSystems."/mnt/data" = {
     device = "/dev/disk/by-label/data";
     fsType = "ext4";
@@ -32,18 +31,11 @@
   environment.systemPackages = with pkgs; [
     discord
     google-chrome
-    ethtool # verify the EEE workaround below (--show-eee)
-
-    # disk tooling — this host's partition layout is hand-managed, not disko'd.
-    # Needed on BOTH sides of the windows-eradication migration: gptfdisk to
-    # cut partitions, parted for partprobe, cloud-utils for growpart when the
-    # data partition absorbs the freed tail, efibootmgr to prune the dead
-    # Windows boot entry. None ship in the default system profile.
-    gptfdisk
-    parted
-    cloud-utils
-    efibootmgr
   ];
+
+  # engine for dev.nix's docker-compose — remove together with the dev import
+  virtualisation.docker.enable = true;
+  users.users.${user}.extraGroups = [ "docker" ]; # lists merge (wheel, gamemode)
 
   # RTL8125B on the in-kernel r8169 driver renegotiates the whole link instead
   # of resuming from EEE low-power idle — ~5s outages that kill SF6's UDP P2P
