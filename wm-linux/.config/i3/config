@@ -1,4 +1,5 @@
-# i3 config — linux counterpart of wm/.aerospace.toml.
+# i3 config — gaming desktop; deliberately NOT the aerospace layout
+# (wm/.aerospace.toml is the work setup — this machine gets its own 5 workspaces).
 # Plain dotfile, stow-linked out-of-store: edits apply on $mod+Shift+c reload,
 # no nix rebuild. Installed by services.xserver.windowManager.i3
 # (modules/nixos/desktop.nix); configFile stays null so this file is read live.
@@ -44,30 +45,38 @@ bindsym $mod+e layout toggle split
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
 
-# workspaces mirror the aerospace set (wm/.aerospace.toml)
-set $ws1 "1-default"
-set $ws2 "2-company"
-set $ws3 "3-communication"
-set $ws4 "4-term"
-set $ws5 "5-build"
-set $ws6 "6-vm"
-set $ws7 "7-private"
+# gaps + thin borders (native gaps, i3 >= 4.22); titlebars only in stacking/tabbed
+gaps inner 8
+smart_gaps on
+default_border pixel 2
+default_floating_border pixel 2
+hide_edge_borders smart
+
+set $ws1 "1:web"
+set $ws2 "2:term"
+set $ws3 "3:game"
+set $ws4 "4:chat"
+set $ws5 "5:misc"
 
 bindsym $mod+1 workspace $ws1
 bindsym $mod+2 workspace $ws2
 bindsym $mod+3 workspace $ws3
 bindsym $mod+4 workspace $ws4
 bindsym $mod+5 workspace $ws5
-bindsym $mod+6 workspace $ws6
-bindsym $mod+7 workspace $ws7
 
 bindsym $mod+Shift+1 move container to workspace $ws1
 bindsym $mod+Shift+2 move container to workspace $ws2
 bindsym $mod+Shift+3 move container to workspace $ws3
 bindsym $mod+Shift+4 move container to workspace $ws4
 bindsym $mod+Shift+5 move container to workspace $ws5
-bindsym $mod+Shift+6 move container to workspace $ws6
-bindsym $mod+Shift+7 move container to workspace $ws7
+
+# same-workspace keypress bounces back (aerospace --auto-back-and-forth)
+workspace_auto_back_and_forth yes
+
+# xterm stays unassigned on purpose — terminal wanted everywhere
+assign [class="(?i)^google-chrome$"] $ws1
+assign [class="(?i)^steam$"] $ws3
+assign [class="(?i)^discord$"] $ws4
 
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
@@ -83,8 +92,34 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
+# everforest dark-medium — WM only; xterm palette stays alacritty-default (see ~/.Xresources)
+set $bg     #2d353b
+set $bg1    #343f44
+set $bg3    #475258
+set $fg     #d3c6aa
+set $grey   #859289
+set $green  #a7c080
+set $red    #e67e80
+set $yellow #dbbc7f
+set $aqua   #83c092
+
+# class                 border bg     text  indicator child_border
+client.focused          $green $green $bg   $aqua  $green
+client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
+client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
+client.urgent           $red   $red   $bg   $red   $red
+
 bar {
-  position bottom
+  position top
   status_command i3status
   font pango:FiraCode Nerd Font 10
+  colors {
+    background $bg
+    statusline $fg
+    separator  $grey
+    focused_workspace  $green $green $bg
+    active_workspace   $bg3   $bg3   $fg
+    inactive_workspace $bg    $bg    $grey
+    urgent_workspace   $red   $red   $bg
+  }
 }

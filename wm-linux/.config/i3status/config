@@ -1,0 +1,49 @@
+# i3status — feeds the i3bar (wm-linux/.config/i3/config).
+# Binary comes from the i3 NixOS module default extraPackages, no extra install.
+# Colors match the everforest set in the i3 config.
+
+general {
+  colors = true
+  color_good = "#a7c080"
+  color_degraded = "#dbbc7f"
+  color_bad = "#e67e80"
+  interval = 5
+}
+
+order += "ethernet enp42s0"
+order += "disk /"
+order += "cpu_usage"
+order += "memory"
+order += "volume master"
+order += "tztime local"
+
+# desktop NIC (hosts/desktop/default.nix)
+ethernet enp42s0 {
+  format_up = "E: %speed"
+  format_down = "E: down"
+}
+
+disk "/" {
+  format = "/ %avail"
+}
+
+cpu_usage {
+  format = "cpu %usage"
+}
+
+memory {
+  format = "mem %used"
+  threshold_degraded = "10%"
+  format_degraded = "MEM %free"
+}
+
+# pipewire-pulse answers the pulse API
+volume master {
+  format = "vol %volume"
+  format_muted = "vol muted"
+  device = "pulse"
+}
+
+tztime local {
+  format = "%a %d %b %H:%M"
+}

@@ -78,6 +78,8 @@ Key Neovim features:
 6. `6-vm`: Virtual machines
 7. `7-private`: Personal apps (Discord auto-assigned)
 
+The NixOS gaming desktop deliberately does NOT mirror this: its i3 config (`wm-linux/.config/i3/config`) has its own 5-workspace scheme (`1:web 2:term 3:game 4:chat 5:misc`) with Everforest theming.
+
 ## Package Management
 
 ### Nix + Homebrew
