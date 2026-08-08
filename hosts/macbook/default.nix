@@ -30,6 +30,11 @@
   users.users.${user}.extraGroups = [ "networkmanager" ]; # lists merge (wheel)
   services.tlp.enable = true;
 
+  # retina panel: fonts scale via Xft.dpi in ~/.Xresources.local (untracked,
+  # machine-local), but cursors ignore X resources in most toolkits — the env
+  # var is what libXcursor and GTK actually honor. 48 = 2x the default 24.
+  environment.variables.XCURSOR_SIZE = "48";
+
   environment.systemPackages = with pkgs; [
     google-chrome
     # media keys, bound in wm-linux/.config/i3/config:
