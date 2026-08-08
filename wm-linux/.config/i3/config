@@ -13,6 +13,12 @@ font pango:FiraCode Nerd Font 10
 # the retina macbook, which must not leak to the desktop
 exec_always --no-startup-id sh -c 'xrdb -merge ~/.Xresources; [ -f ~/.Xresources.local ] && xrdb -merge ~/.Xresources.local'
 
+# i3 reads Xft.dpi/Xcursor.size ONCE at startup — before the async merge above
+# lands, so the first render is 96dpi. One restart after an ordered merge fixes
+# it; `exec` (unlike exec_always) does not re-fire on restart, so no loop.
+# No-op where ~/.Xresources.local is absent (the desktop).
+exec --no-startup-id sh -c '[ -f ~/.Xresources.local ] && { xrdb -merge ~/.Xresources; xrdb -merge ~/.Xresources.local; i3-msg restart; }'
+
 # key remaps (caps->ctrl, rctrl->;:, ralt->'") — resets on keyboard hotplug,
 # $mod+Shift+c re-applies
 exec_always --no-startup-id xmodmap ~/.Xmodmap
