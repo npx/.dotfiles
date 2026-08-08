@@ -33,9 +33,13 @@
   # retina panel: fonts scale via Xft.dpi in ~/.Xresources.local (untracked,
   # machine-local), but cursors ignore X resources in most toolkits — the env
   # var is what libXcursor and GTK actually honor. 48 = 2x the default 24.
+  # SIZE alone does nothing without an Xcursor theme installed: the fallback
+  # is the fixed-size X core cursor font. bibata ships all sizes up to 96.
   environment.variables.XCURSOR_SIZE = "48";
+  environment.variables.XCURSOR_THEME = "Bibata-Modern-Classic";
 
   environment.systemPackages = with pkgs; [
+    bibata-cursors # lands in XCURSOR_PATH via share/icons
     google-chrome
     # media keys, bound in wm-linux/.config/i3/config:
     brightnessctl # screen + smc::kbd_backlight via logind, no perms needed
