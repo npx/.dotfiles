@@ -10,17 +10,33 @@ general {
   interval = 5
 }
 
+order += "wireless _first_"
 order += "ethernet enp42s0"
 order += "disk /"
 order += "cpu_usage"
 order += "memory"
+order += "battery all"
 order += "volume master"
 order += "tztime local"
+
+# shared between desktop and macbook: modules for hardware the other machine
+# lacks hide via empty format_down (wireless/battery on desktop, wired NIC on
+# the macbook — its only ethernet is the transient iPhone tether)
+wireless _first_ {
+  format_up = "W: %essid %quality"
+  format_down = ""
+}
 
 # desktop NIC (hosts/desktop/default.nix)
 ethernet enp42s0 {
   format_up = "E: %speed"
-  format_down = "E: down"
+  format_down = ""
+}
+
+battery all {
+  format = "bat %percentage %status"
+  format_down = ""
+  last_full_capacity = true
 }
 
 disk "/" {
