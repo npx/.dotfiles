@@ -8,8 +8,10 @@ set $mod Mod4
 
 font pango:FiraCode Nerd Font 10
 
-# xterm styling (fonts + colors) lives in ~/.Xresources
-exec_always --no-startup-id xrdb -merge ~/.Xresources
+# xterm styling (fonts + colors) lives in ~/.Xresources; ~/.Xresources.local
+# is machine-local and untracked (like term/.secrets) — e.g. Xft.dpi: 192 on
+# the retina macbook, which must not leak to the desktop
+exec_always --no-startup-id sh -c 'xrdb -merge ~/.Xresources; [ -f ~/.Xresources.local ] && xrdb -merge ~/.Xresources.local'
 
 # key remaps (caps->ctrl, rctrl->;:, ralt->'") — resets on keyboard hotplug,
 # $mod+Shift+c re-applies
