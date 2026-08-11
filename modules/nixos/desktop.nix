@@ -1,6 +1,6 @@
 # Graphical session layer for the NixOS desktop:
 # X11 + i3 + greetd/tuigreet + pipewire.
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   sessions = config.services.displayManager.sessionData.desktops;
 in
@@ -15,7 +15,7 @@ in
     # tuigreet launches xsession entries via its default wrapper
     # (`startx /usr/bin/env`); startx.enable provides the binary.
     displayManager.startx.enable = true;
-    xkb.layout = "us";
+    xkb.layout = lib.mkDefault "us"; # hosts with other physical keyboards override
   };
 
   # Sessions auto-register into sessionData: i3 -> xsessions, steam gamescope
