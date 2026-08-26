@@ -27,6 +27,17 @@
 	# git adog: doggy graph
 	adog = log --all --decorate --oneline --graph
 
+	# git review [base] [--stat]: branch commits oldest first, full diffs (default base: main);
+	# a flag arg (e.g. --stat) replaces -p, a non-flag arg replaces base
+	review = "!f() { \
+		mode=-p; base=main; \
+		for a in \"$@\"; \
+		do \
+			case \"$a\" in -*) mode=\"$a\";; *) base=\"$a\";; esac; \
+		done; \
+		git log \"$mode\" --reverse \"$base..HEAD\"; \
+	}; f"
+
 	# git blg <branch> <branch> ...: show graph with only matching partial branch names
 	blg = "!f() { \
 		cmd=\"git log --oneline --graph\"; \
