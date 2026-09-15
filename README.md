@@ -71,11 +71,67 @@ stay plain files in this repo; `modules/home/lib/stow.nix` links them into
    sudo ln -s ~/Private/github.com/npx/.dotfiles /etc/nix-darwin
    ```
 
+## Fresh NixOS (gaming desktop)
+
+Same repo, host `desktop`. Boot the minimal ISO,
+`sudo -i`, then:
+
+1. **Partition + label** — labels are load-bearing if you keep the committed
+   hardware config (device varies; the VM was `/dev/vda`):
+
+   ```sh
+   parted /dev/vda -- mklabel gpt
+   parted /dev/vda -- mkpart ESP fat32 1MB 512MB
+   parted /dev/vda -- set 1 esp on
+   parted /dev/vda -- mkpart root ext4 512MB 100%
+   mkfs.fat -F 32 -n boot /dev/vda1
+   mkfs.ext4 -L nixos /dev/vda2
+   mount /dev/disk/by-label/nixos /mnt
+   mkdir -p /mnt/boot
+   mount -o umask=077 /dev/disk/by-label/boot /mnt/boot
+   ```
+
+2. **Clone to the load-bearing path**:
+
+   ```sh
+   nix-shell -p git
+   mkdir -p /mnt/home/ybaron/Private/github.com/npx
+   git clone https://github.com/npx/.dotfiles.git \
+     /mnt/home/ybaron/Private/github.com/npx/.dotfiles
+   ```
+
+3. **Hardware config** — replace the committed placeholder with reality
+   (commit it once the machine is online):
+
+   ```sh
+   nixos-generate-config --root /mnt --show-hardware-config \
+     > /mnt/home/ybaron/Private/github.com/npx/.dotfiles/hosts/desktop/hardware-configuration.nix
+   ```
+
+4. **Install** (root stays locked; `ybaron` is wheel):
+
+   ```sh
+   nixos-install --root /mnt --no-root-passwd \
+     --flake /mnt/home/ybaron/Private/github.com/npx/.dotfiles#desktop
+   nixos-enter --root /mnt -c 'passwd ybaron'
+   ```
+
+5. **Reboot** without the ISO → tuigreet → pick `i3` (or the `steam`
+   console session). First login:
+
+   ```sh
+   sudo chown -R ybaron: /home/ybaron/Private
+   cd ~/Private/github.com/npx/.dotfiles && ./setup
+   ```
+
+   Then commit + push the hardware config.
+
 ## Day to day
 
 ```sh
 # apply nix-level changes (packages, modules, casks, defaults)
-sudo darwin-rebuild switch --flake ~/Private/github.com/npx/.dotfiles
+sudo darwin-rebuild switch --flake ~/Private/github.com/npx/.dotfiles   # mac
+sudo nixos-rebuild switch --flake ~/Private/github.com/npx/.dotfiles    # nixos
 ```
 
 | Change | Where | Then |
