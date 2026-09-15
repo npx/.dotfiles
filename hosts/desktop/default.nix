@@ -33,6 +33,12 @@
     google-chrome
   ];
 
+  # suspend from i3 ($mod+Shift+s). r8169 re-inits the PHY on resume, which
+  # can resurrect EEE — powerManagement.enable provides post-resume.target,
+  # where the disable-eee oneshot below gets re-run
+  powerManagement.enable = true;
+  powerManagement.resumeCommands = "${pkgs.systemd}/bin/systemctl restart disable-eee-enp42s0.service";
+
   # engine for dev.nix's docker-compose — remove together with the dev import
   virtualisation.docker.enable = true;
   users.users.${user}.extraGroups = [ "docker" ]; # lists merge (wheel, gamemode)

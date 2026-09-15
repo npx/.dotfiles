@@ -78,6 +78,9 @@ assign [class="(?i)^google-chrome$"] $ws1
 assign [class="(?i)^steam$"] $ws3
 assign [class="(?i)^discord$"] $ws4
 
+# step away: full suspend — jellyfin is down until a key press wakes the box
+bindsym $mod+Shift+s exec --no-startup-id systemctl suspend
+
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec i3-msg exit
