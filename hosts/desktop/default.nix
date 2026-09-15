@@ -7,6 +7,7 @@
     ./hardware-configuration.nix # real: generated 2026-08-02 against nvme0n1
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/gaming.nix # x86_64-only
+    ../../modules/nixos/vpn.nix
   ];
 
   networking.hostName = "desktop"; # = flake attr; nixos-rebuild auto-picks
