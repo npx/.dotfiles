@@ -43,10 +43,21 @@
 		$cmd; \
 	}; f"
 
+	# git lg: current branch + its upstream, main + its upstream, stashes made on current branch
+	#         on main/master itself: all branches (git lg0)
 	lg = "!f() { \
+		case $(git rev-parse --abbrev-ref HEAD) in main|master) exec git lg0;; esac; \
 		refs=HEAD; \
 		up=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) && refs=\"$refs $up\"; \
-		git rev-parse --verify --quiet refs/stash >/dev/null && refs=\"$refs refs/stash\"; \
+		for m in main master; do \
+			git rev-parse --verify --quiet \"$m\" >/dev/null || continue; \
+			refs=\"$refs $m\"; \
+			mup=$(git rev-parse --abbrev-ref --symbolic-full-name \"$m@{u}\" 2>/dev/null) && refs=\"$refs $mup\"; \
+			break; \
+		done; \
+		for s in $(git stash list --format=%gd); do \
+			git merge-base --is-ancestor \"$s^\" HEAD 2>/dev/null && refs=\"$refs $s\"; \
+		done; \
 		git lg0-specific $refs; \
 	}; f"
 	lgw = !"git lg0-specific HEAD refs/stash"
