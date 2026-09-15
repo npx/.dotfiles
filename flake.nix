@@ -41,5 +41,14 @@
       ];
     };
 
+    nixosConfigurations."macbook" = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs user; };
+      modules = [
+        ./modules/shared
+        ./modules/nixos
+        ./hosts/macbook
+      ];
+    };
+
   };
 }
