@@ -27,6 +27,10 @@
 	# git adog: doggy graph
 	adog = log --all --decorate --oneline --graph
 
+	# git review [base]: branch commits oldest first, file list + full diff per commit (default base: main)
+	# LESS: git's default FRX + A (searches start after the top line; needed by ~/.lesskey j/k/arrow jumps)
+	review = "!f() { LESS=-FRXA git -c core.pager=delta log --stat -p --reverse \"${1:-main}..HEAD\"; }; f"
+
 	# git blg <branch> <branch> ...: show graph with only matching partial branch names
 	blg = "!f() { \
 		cmd=\"git log --oneline --graph\"; \
@@ -39,10 +43,21 @@
 		$cmd; \
 	}; f"
 
+	# git lg: current branch + its upstream, main + its upstream, stashes made on current branch
+	#         on main/master itself: all branches (git lg0)
 	lg = "!f() { \
+		case $(git rev-parse --abbrev-ref HEAD) in main|master) exec git lg0;; esac; \
 		refs=HEAD; \
 		up=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) && refs=\"$refs $up\"; \
-		git rev-parse --verify --quiet refs/stash >/dev/null && refs=\"$refs refs/stash\"; \
+		for m in main master; do \
+			git rev-parse --verify --quiet \"$m\" >/dev/null || continue; \
+			refs=\"$refs $m\"; \
+			mup=$(git rev-parse --abbrev-ref --symbolic-full-name \"$m@{u}\" 2>/dev/null) && refs=\"$refs $mup\"; \
+			break; \
+		done; \
+		for s in $(git stash list --format=%gd); do \
+			git merge-base --is-ancestor \"$s^\" HEAD 2>/dev/null && refs=\"$refs $s\"; \
+		done; \
 		git lg0-specific $refs; \
 	}; f"
 	lgw = !"git lg0-specific HEAD refs/stash"
@@ -103,3 +118,10 @@
 	defaultBranch = main
 [core]
 	autocrlf = input
+[delta]
+	# trial: only used by `git review` (via -c core.pager=delta)
+	navigate = true
+	# n/N stop at commits and files only (default also stops at hunks: '•')
+	navigate-regex = ^(commit|added:|removed:|renamed:|Δ)
+	line-numbers = true
+	hyperlinks = false
