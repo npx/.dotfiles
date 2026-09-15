@@ -8,6 +8,7 @@
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/gaming.nix # x86_64-only
     ../../modules/nixos/vpn.nix
+    ../../modules/nixos/media.nix # jellyfin + /srv/media
   ];
 
   networking.hostName = "desktop"; # = flake attr; nixos-rebuild auto-picks
