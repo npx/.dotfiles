@@ -12,3 +12,10 @@ require("mason-lspconfig").setup({
     exclude = { "ts_ls", "pylsp", "omnisharp", "shopify_theme_ls" },
   },
 })
+
+-- Non-LSP tools mason-lspconfig can't ensure (formatters + ty): without
+-- this list they were manual :MasonInstall's, silently missing on a fresh
+-- machine.
+require("mason-tool-installer").setup({
+  ensure_installed = { "ty", "prettierd", "shfmt" },
+})
