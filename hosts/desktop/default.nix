@@ -27,18 +27,10 @@
     fsType = "ext4";
   };
 
-  # monitor-layout (term/.bin, i3 exec + $mod+Shift+m): the iiyama is shared
-  # with the macbook over HDMI and keeps its DP link up on either input, so
-  # the only way to know which one it shows is asking it over DDC/CI
-  # (ddcutil, VCP 0x60). hardware.i2c loads i2c-dev and grants the i2c group
-  # the /dev/i2c-* nodes.
-  hardware.i2c.enable = true;
-
   # same GUI apps as the mac (casks there, nixpkgs here)
   environment.systemPackages = with pkgs; [
     discord
     google-chrome
-    ddcutil # monitor-layout
   ];
 
   # suspend from i3 ($mod+Shift+s). r8169 re-inits the PHY on resume, which
@@ -49,7 +41,7 @@
 
   # engine for dev.nix's docker-compose — remove together with the dev import
   virtualisation.docker.enable = true;
-  users.users.${user}.extraGroups = [ "docker" "i2c" ]; # lists merge (wheel, gamemode); i2c = ddcutil
+  users.users.${user}.extraGroups = [ "docker" ]; # lists merge (wheel, gamemode)
 
   # RTL8125B on the in-kernel r8169 driver renegotiates the whole link instead
   # of resuming from EEE low-power idle — ~5s outages that kill SF6's UDP P2P

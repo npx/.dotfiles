@@ -15,15 +15,10 @@ exec_always --no-startup-id xrdb -merge ~/.Xresources
 # $mod+Shift+c re-applies
 exec_always --no-startup-id xmodmap ~/.Xmodmap
 
-# desktop main monitor (AOC, DP-3) is primary — games/SDL/Wine pick the
-# primary output for fullscreen. No-op when DP-3 is absent.
-exec_always --no-startup-id xrandr --output DP-3 --primary --mode 2560x1440 --rate 144
-# second monitor (iiyama, DP-2) is shared with the macbook over HDMI: it is
-# only enabled while its input source is DP (DDC/CI poll — see the script).
-# $mod+Shift+m forces a re-check. `exec`, not exec_always: the loop survives
-# restarts, and the script's flock keeps it single anyway.
-exec_always --no-startup-id ~/.bin/monitor-layout
-exec --no-startup-id ~/.bin/monitor-layout watch
+# desktop monitors: mirror both on start, then pick a layout by hand
+# ($mod+Shift+m, mode "monitor" below). `exec`, not exec_always: a restart
+# must not throw away the layout that was picked. No-op on the macbook.
+exec --no-startup-id ~/.bin/monitor-layout mirror
 
 # drag floating windows with $mod
 floating_modifier $mod
@@ -92,7 +87,6 @@ assign [class="(?i)^discord$"] $ws4
 
 # step away: full suspend — jellyfin is down until a key press wakes the box
 bindsym $mod+Shift+s exec --no-startup-id systemctl suspend
-bindsym $mod+Shift+m exec --no-startup-id ~/.bin/monitor-layout
 
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
@@ -107,6 +101,28 @@ mode "resize" {
   bindsym Escape mode "default"
 }
 bindsym $mod+r mode "resize"
+
+# desktop monitor layouts (term/.bin/monitor-layout): which machine a monitor
+# shows is set at its input button; this only picks what the desktop outputs
+#   m  mirror — both, same picture (start default; also "guest + work")
+#   g  game   — everything on the iiyama, primary (macbook has the AOC)
+#   d  dual   — AOC primary, iiyama above with web + chat
+#   a  aoc    — everything on the AOC, primary (guest on the iiyama's HDMI)
+#   c  cursor — pointer back onto the visible monitor (outputs stay on, so
+#               it can slide onto the dark one; the script warps via i3)
+# The mode name is the cheat sheet: i3bar shows it while the mode is active.
+# The active layout shows permanently in the bar (i3status read_file).
+set $monitor_mode "monitor: [m]irror  [g]ame  [d]ual  [a]oc  [c]ursor  (esc)"
+mode $monitor_mode {
+  bindsym m exec --no-startup-id ~/.bin/monitor-layout mirror; mode "default"
+  bindsym g exec --no-startup-id ~/.bin/monitor-layout game; mode "default"
+  bindsym d exec --no-startup-id ~/.bin/monitor-layout dual; mode "default"
+  bindsym a exec --no-startup-id ~/.bin/monitor-layout aoc; mode "default"
+  bindsym c exec --no-startup-id ~/.bin/monitor-layout cursor; mode "default"
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+bindsym $mod+Shift+m mode $monitor_mode
 
 # everforest dark-medium — WM only; xterm palette stays alacritty-default (see ~/.Xresources)
 set $bg     #2d353b
