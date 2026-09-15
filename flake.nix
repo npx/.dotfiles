@@ -30,5 +30,16 @@
       ];
     };
 
+    # $ sudo nixos-rebuild switch --flake .
+    # (attr name must match networking.hostName — nixos-rebuild auto-picks)
+    nixosConfigurations."desktop" = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs user; };
+      modules = [
+        ./modules/shared
+        ./modules/nixos
+        ./hosts/desktop
+      ];
+    };
+
   };
 }
