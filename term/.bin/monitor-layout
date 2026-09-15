@@ -1,0 +1,101 @@
+#!/bin/sh
+# Desktop dual/single monitor switch, driven by the second monitor's INPUT
+# SOURCE (DDC/CI, VCP 0x60) — not by hotplug: the iiyama keeps its DP link
+# up (EDID readable, output driven) while it shows the macbook on HDMI,
+# so xrandr/udev never see a change. ddcutil still answers over the DP aux
+# channel even with the output --off in X (verified 2026-09-12).
+#
+# Readings:  x0f = showing DP (us)   x11 = showing HDMI (macbook)
+#            x00 = standby: no signal on whichever input is selected. That
+#            is ALSO what "switched to DP while we have it off" looks like,
+#            so the one-shot probes: turn the output on, ask again (it wakes
+#            and answers x0f within ~2s — verified 2026-09-13).
+#
+#   monitor-layout        one-shot (i3 start, $mod+Shift+m): DP -> dual,
+#                         HDMI -> single, standby -> probe, then decide
+#   monitor-layout watch  poll loop (i3 exec): DP -> dual, HDMI -> single,
+#                         standby -> keep the current layout. No probing
+#                         here — that would flash the output every poll.
+#
+# dual   = iiyama left of the AOC, web + chat workspaces move over
+# single = iiyama off; i3 pulls every workspace back onto the AOC
+# Harmless on the macbook (same i3 config): no ddcutil -> exits.
+MAIN=DP-3
+SECOND=DP-2
+SECOND_MODEL=PL2760Q # iiyama; select by model — i2c bus numbers are not stable
+SECOND_MODE="--mode 2560x1440 --rate 143.86" # it defaults to 60Hz
+SECOND_WORKSPACES="1:web 4:chat"
+INTERVAL=10
+
+command -v ddcutil >/dev/null || exit 0
+
+# DDC reads occasionally come back empty — one retry
+input() {
+	for _ in 1 2; do
+		v=$(ddcutil getvcp 60 --model "$SECOND_MODEL" --terse 2>/dev/null | awk '{print $4}')
+		[ -n "$v" ] && break
+	done
+	echo "$v"
+}
+second_on() { xrandr --listmonitors | grep -q " $SECOND\$"; }
+second_enable() {
+	# shellcheck disable=SC2086
+	xrandr --output "$SECOND" $SECOND_MODE --left-of "$MAIN"
+}
+ws_output() { i3-msg -t get_workspaces | jq -r --arg n "$1" '.[] | select(.name == $n) | .output'; }
+
+# idempotent: the watch loop calls this every poll while dual
+dual() {
+	second_on || second_enable
+	moved=
+	for ws in $SECOND_WORKSPACES; do
+		[ "$(ws_output "$ws")" = "$SECOND" ] && continue
+		[ -n "$moved" ] || cur=$(i3-msg -t get_workspaces | jq -r '.[] | select(.focused) | .name')
+		i3-msg "workspace $ws; move workspace to output $SECOND" >/dev/null
+		moved=1
+	done
+	# only if we left it: `workspace <current>` would bounce back
+	# (workspace_auto_back_and_forth)
+	[ -n "$moved" ] && i3-msg "workspace $cur" >/dev/null
+}
+
+single() {
+	second_on || return 0
+	xrandr --output "$SECOND" --off
+}
+
+case ${1:-} in
+watch)
+	# one loop only, even across i3 restarts
+	exec flock -n "${XDG_RUNTIME_DIR:-/tmp}/monitor-layout.lock" sh -c '
+		while :; do
+			case $("$0" input) in
+			x0f) "$0" dual ;;
+			x11) "$0" single ;;
+			esac
+			sleep "$1"
+		done' "$0" "$INTERVAL"
+	;;
+input | dual | single) "$1" ;;
+*)
+	case $(input) in
+	x0f) dual ;;
+	x11) single ;;
+	*)
+		# standby. With our signal already present it is asleep on HDMI
+		# (macbook off) -> single. Without it, it may be on DP waiting for
+		# us -> probe.
+		if second_on; then
+			single
+		else
+			second_enable
+			sleep 3
+			case $(input) in
+			x0f) dual ;;
+			*) single ;;
+			esac
+		fi
+		;;
+	esac
+	;;
+esac

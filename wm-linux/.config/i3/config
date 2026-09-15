@@ -15,8 +15,15 @@ exec_always --no-startup-id xrdb -merge ~/.Xresources
 # $mod+Shift+c re-applies
 exec_always --no-startup-id xmodmap ~/.Xmodmap
 
-# desktop monitor defaults to 60Hz — force 144 (no-ops when DP-3 is absent)
-exec_always --no-startup-id xrandr --output DP-3 --mode 2560x1440 --rate 143.86
+# desktop main monitor (AOC, DP-3) is primary — games/SDL/Wine pick the
+# primary output for fullscreen. No-op when DP-3 is absent.
+exec_always --no-startup-id xrandr --output DP-3 --primary --mode 2560x1440 --rate 144
+# second monitor (iiyama, DP-2) is shared with the macbook over HDMI: it is
+# only enabled while its input source is DP (DDC/CI poll — see the script).
+# $mod+Shift+m forces a re-check. `exec`, not exec_always: the loop survives
+# restarts, and the script's flock keeps it single anyway.
+exec_always --no-startup-id ~/.bin/monitor-layout
+exec --no-startup-id ~/.bin/monitor-layout watch
 
 # drag floating windows with $mod
 floating_modifier $mod
@@ -73,6 +80,11 @@ bindsym $mod+Shift+5 move container to workspace $ws5
 # same-workspace keypress bounces back (aerospace --auto-back-and-forth)
 workspace_auto_back_and_forth yes
 
+# games hold a pointer grab and re-centre the cursor every frame; with
+# focus-follows-mouse that motion yanks focus back to the game the moment
+# $mod+N shows a workspace on the other monitor. Keys/clicks focus only.
+focus_follows_mouse no
+
 # xterm stays unassigned on purpose — terminal wanted everywhere
 assign [class="(?i)^google-chrome$"] $ws1
 assign [class="(?i)^steam$"] $ws3
@@ -80,6 +92,7 @@ assign [class="(?i)^discord$"] $ws4
 
 # step away: full suspend — jellyfin is down until a key press wakes the box
 bindsym $mod+Shift+s exec --no-startup-id systemctl suspend
+bindsym $mod+Shift+m exec --no-startup-id ~/.bin/monitor-layout
 
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
@@ -107,7 +120,7 @@ set $yellow #dbbc7f
 set $aqua   #83c092
 
 # class                 border bg     text  indicator child_border
-client.focused          $green $green $bg   $aqua  $green
+client.focused          $green $green $bg   $yellow $green
 client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
 client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
 client.urgent           $red   $red   $bg   $red   $red
