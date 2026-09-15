@@ -24,6 +24,9 @@ PATH="${PATH}:/usr/local/sbin"
 # personal executables
 PATH="${PATH}:$HOME/.bin"
 
+# user-local installs (claude native installer lives here)
+PATH="$HOME/.local/bin:${PATH}"
+
 # directory switching
 function d() {
   local dir=$(dirs -v | fzf --prompt="Select dir> " | awk '{print $2}')
@@ -35,42 +38,13 @@ function fs() {
   alacritty msg config --window-id -1 font.size="${1:-18}"
 }
 
-# nvm
-export NVM_DIR="$HOME/.nvm"
-lazynvm() {
-  unset -f nvm node npm npx nvim
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
-  if [ -f "$NVM_DIR/bash_completion" ]; then
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-  fi
-}
-
-nvm() {
-  lazynvm
-  nvm $@
-}
-
-node() {
-  lazynvm
-  node $@
-}
-
-npm() {
-  lazynvm
-  npm $@
-}
-
-npx() {
-  lazynvm
-  npx $@
-}
-
-nvim() {
-  if [ -f "package.json" ]; then
-    lazynvm
-  fi
-  command nvim $@
-}
+# node via fnm: default version on PATH in every shell; the hook switches on
+# cd, and the startup check below covers panes that BEGIN inside a project
+# (tmux-sessionizer), so .nvmrc pins apply without a manual `fnm use`.
+if command -v fnm >/dev/null; then
+  eval "$(fnm env --use-on-cd)"
+  { [ -f .nvmrc ] || [ -f .node-version ]; } && fnm use --silent-if-unchanged
+fi
 
 # make path available
 export PATH
