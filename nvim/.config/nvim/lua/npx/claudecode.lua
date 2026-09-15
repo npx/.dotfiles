@@ -32,6 +32,13 @@ claudecode.setup({
           table.insert(args, "-e")
           table.insert(args, k .. "=" .. tostring(v))
         end
+        -- The tmux server runs the pane command with ITS environment, not a
+        -- login shell — ~/.local/bin (claude native installer) may not be on
+        -- that PATH. Use the absolute path when it exists.
+        local native = vim.fn.expand("~/.local/bin/claude")
+        if cmd == "claude" and vim.fn.executable(native) == 1 then
+          cmd = native
+        end
         -- Start claude in ultracode effort. Single-quote the JSON so tmux's
         -- `sh -c` passes it to claude intact.
         table.insert(args, cmd .. [[ --settings '{"ultracode": true}']])
