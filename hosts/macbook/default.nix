@@ -25,6 +25,17 @@
   # bumps don't re-break eval.
   nixpkgs.config.allowInsecurePredicate = pkg: lib.getName pkg == "broadcom-sta";
 
+  # JIS keyboard: jp for X (greeter + i3 session), jp106 for the consoles
+  services.xserver.xkb.layout = "jp";
+  console.keyMap = "jp106";
+
+  # HD 4000 on modesetting tears (diagonal line on fast scroll) — no
+  # compositor by design, so let the driver vsync its page flips instead.
+  # Costs up to a frame of latency: irrelevant on a media/couch box.
+  services.xserver.deviceSection = ''
+    Option "TearFree" "true"
+  '';
+
   # laptop bits: wifi roaming (nmtui) + battery life
   networking.networkmanager.enable = true;
   users.users.${user}.extraGroups = [ "networkmanager" ]; # lists merge (wheel)
