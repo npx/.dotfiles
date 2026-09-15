@@ -27,16 +27,9 @@
 	# git adog: doggy graph
 	adog = log --all --decorate --oneline --graph
 
-	# git review [base] [--stat]: branch commits oldest first, full diffs (default base: main);
-	# a flag arg (e.g. --stat) replaces -p, a non-flag arg replaces base
-	review = "!f() { \
-		mode=-p; base=main; \
-		for a in \"$@\"; \
-		do \
-			case \"$a\" in -*) mode=\"$a\";; *) base=\"$a\";; esac; \
-		done; \
-		git log \"$mode\" --reverse \"$base..HEAD\"; \
-	}; f"
+	# git review [base]: branch commits oldest first, file list + full diff per commit (default base: main)
+	# LESS: git's default FRX + A (searches start after the top line; needed by ~/.lesskey j/k/arrow jumps)
+	review = "!f() { LESS=-FRXA git -c core.pager=delta log --stat -p --reverse \"${1:-main}..HEAD\"; }; f"
 
 	# git blg <branch> <branch> ...: show graph with only matching partial branch names
 	blg = "!f() { \
@@ -114,3 +107,10 @@
 	defaultBranch = main
 [core]
 	autocrlf = input
+[delta]
+	# trial: only used by `git review` (via -c core.pager=delta)
+	navigate = true
+	# n/N stop at commits and files only (default also stops at hunks: '•')
+	navigate-regex = ^(commit|added:|removed:|renamed:|Δ)
+	line-numbers = true
+	hyperlinks = false

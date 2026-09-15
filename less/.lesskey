@@ -1,0 +1,11 @@
+#command
+# git review (delta): j/k jump files+commits, arrows jump commits only (n/N still repeat last search)
+# delta rewrites "diff --git" headers to "Δ path" / "added: path" / ...
+# Needs less -A (set via LESS in the git alias): a fresh search normally starts AT the
+# top line (/) or bottom line (?) of the screen, so a header sitting on top is found
+# again and again; -A starts just after/before the top line instead.
+# lesskey(1): "^X" is a control char, literal caret is \^, literal space is \ (space)
+j     forw-search \^(commit|Δ|added:|removed:|renamed:|diff\ --git)\n
+k     back-search \^(commit|Δ|added:|removed:|renamed:|diff\ --git)\n
+\kd   forw-search \^commit\n
+\ku   back-search \^commit\n

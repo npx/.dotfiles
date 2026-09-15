@@ -5,10 +5,13 @@
   home.file = import ./lib/stow.nix { inherit config lib; } [
     "term"
     "git"
+    "less"
   ];
 
   home.packages = with pkgs; [
     git
+    delta
+    less # >= 582 reads ~/.lesskey (stow pkg "less") directly; macOS ships 581
     tmux
     fzf
     ripgrep
