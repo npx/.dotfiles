@@ -1,0 +1,9 @@
+! caps -> left control; right control -> ;/:; right alt -> '/"
+! order matters: modifier maps reference keysyms as currently assigned
+clear lock
+remove control = Control_R
+remove mod1 = Alt_R
+keycode 66 = Control_L
+keycode 105 = semicolon colon
+keycode 108 = apostrophe quotedbl
+add control = Control_L
