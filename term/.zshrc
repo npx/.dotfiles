@@ -11,9 +11,9 @@ setopt autocd autopushd pushdignoredups
 
 bindkey -v
 
-# setup fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# fzf shell integration (ctrl-r/ctrl-t); path-independent, works on any machine
+command -v fzf >/dev/null && source <(fzf --zsh)
 
 source ~/.bash_profile
 
-eval "$(direnv hook zsh)"
+command -v direnv >/dev/null && eval "$(direnv hook zsh)"
