@@ -15,8 +15,10 @@ exec_always --no-startup-id xrdb -merge ~/.Xresources
 # $mod+Shift+c re-applies
 exec_always --no-startup-id xmodmap ~/.Xmodmap
 
-# desktop monitor defaults to 60Hz — force 144 (no-ops when DP-3 is absent)
-exec_always --no-startup-id xrandr --output DP-3 --mode 2560x1440 --rate 143.86
+# desktop monitors: mirror both on start, then pick a layout by hand
+# ($mod+Shift+m, mode "monitor" below). `exec`, not exec_always: a restart
+# must not throw away the layout that was picked. No-op on the macbook.
+exec --no-startup-id ~/.bin/monitor-layout mirror
 
 # drag floating windows with $mod
 floating_modifier $mod
@@ -73,6 +75,11 @@ bindsym $mod+Shift+5 move container to workspace $ws5
 # same-workspace keypress bounces back (aerospace --auto-back-and-forth)
 workspace_auto_back_and_forth yes
 
+# games hold a pointer grab and re-centre the cursor every frame; with
+# focus-follows-mouse that motion yanks focus back to the game the moment
+# $mod+N shows a workspace on the other monitor. Keys/clicks focus only.
+focus_follows_mouse no
+
 # xterm stays unassigned on purpose — terminal wanted everywhere
 assign [class="(?i)^google-chrome$"] $ws1
 assign [class="(?i)^steam$"] $ws3
@@ -95,6 +102,28 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
+# desktop monitor layouts (term/.bin/monitor-layout): which machine a monitor
+# shows is set at its input button; this only picks what the desktop outputs
+#   m  mirror — both, same picture (start default; also "guest + work")
+#   g  game   — everything on the iiyama, primary (macbook has the AOC)
+#   d  dual   — AOC primary, iiyama above with web + chat
+#   a  aoc    — everything on the AOC, primary (guest on the iiyama's HDMI)
+#   c  cursor — pointer back onto the visible monitor (outputs stay on, so
+#               it can slide onto the dark one; the script warps via i3)
+# The mode name is the cheat sheet: i3bar shows it while the mode is active.
+# The active layout shows permanently in the bar (i3status read_file).
+set $monitor_mode "monitor: [m]irror  [g]ame  [d]ual  [a]oc  [c]ursor  (esc)"
+mode $monitor_mode {
+  bindsym m exec --no-startup-id ~/.bin/monitor-layout mirror; mode "default"
+  bindsym g exec --no-startup-id ~/.bin/monitor-layout game; mode "default"
+  bindsym d exec --no-startup-id ~/.bin/monitor-layout dual; mode "default"
+  bindsym a exec --no-startup-id ~/.bin/monitor-layout aoc; mode "default"
+  bindsym c exec --no-startup-id ~/.bin/monitor-layout cursor; mode "default"
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+bindsym $mod+Shift+m mode $monitor_mode
+
 # everforest dark-medium — WM only; xterm palette stays alacritty-default (see ~/.Xresources)
 set $bg     #2d353b
 set $bg1    #343f44
@@ -107,7 +136,7 @@ set $yellow #dbbc7f
 set $aqua   #83c092
 
 # class                 border bg     text  indicator child_border
-client.focused          $green $green $bg   $aqua  $green
+client.focused          $green $green $bg   $yellow $green
 client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
 client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
 client.urgent           $red   $red   $bg   $red   $red

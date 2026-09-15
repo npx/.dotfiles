@@ -1,0 +1,145 @@
+#!/bin/sh
+# Desktop monitor layouts, picked by hand (i3 $mod+Shift+m -> mode "monitor").
+# Both monitors hang off the desktop over DP; the AOC is also the macbook's
+# work screen and the iiyama has a free HDMI for a guest. Which machine a
+# monitor shows is decided at the monitor's input button — this script only
+# decides what the desktop puts on its two outputs. (An earlier version
+# asked the iiyama over DDC/CI which input it showed; see git history.)
+#
+#   mirror  boot default: same picture on both, so whichever monitor is
+#           pointed at the desktop shows it. Also covers "guest + work",
+#           where nobody is looking at the desktop at all.
+#   game    iiyama is primary and holds every workspace — the macbook has
+#           the AOC
+#   dual    macbook off: AOC primary below, iiyama above with web + chat
+#   aoc     guest on the iiyama's HDMI: AOC primary, holds every workspace
+#   cursor  pull the pointer back onto the visible monitor
+#
+# Outputs are never switched off: the monitor's DP receiver keeps the link
+# up whatever input its panel shows, so a "dark" output is just one nobody
+# looks at. Everything after the first pick is i3 moves + primary — no
+# modeset, no blanking. Only mirror <-> stacked re-sets modes (a few
+# seconds of black on both, the root framebuffer changes size).
+# Primary matters: games/SDL/Wine fullscreen on the primary output.
+# Harmless on the macbook (same i3 config): outputs absent -> exits.
+AOC_MODE="--mode 2560x1440 --rate 144"
+IIYAMA_MODE="--mode 2560x1440 --rate 143.86" # it defaults to 60Hz
+IIYAMA_WORKSPACES="1:web 4:chat"              # dual only
+STATE="${XDG_RUNTIME_DIR:-/tmp}/monitor-layout" # shown in the bar (i3status read_file)
+
+# Outputs are found by the monitor's EDID model name, not by connector: the
+# DP-2/DP-3 assignment silently swapped once when the cables were redone
+# (2026-09-15). The EDID name descriptor is plain ASCII, grep -a finds it.
+output_of() {
+	for c in /sys/class/drm/card*-DP-*; do
+		[ "$(cat "$c/status" 2>/dev/null)" = connected ] || continue
+		grep -aq "$1" "$c/edid" 2>/dev/null || continue
+		basename "$c" | sed 's/^card[0-9]*-//'
+		return
+	done
+}
+AOC=$(output_of Q27G4)
+IIYAMA=$(output_of PL2760Q)
+[ -n "$AOC" ] && [ -n "$IIYAMA" ] || exit 0
+
+# iiyama above the AOC. Idempotent: only modesets when the geometry differs
+# (i.e. coming from mirror), so game/dual/aoc switch without blanking.
+# shellcheck disable=SC2086
+stacked() {
+	xrandr | grep -q "^$IIYAMA connected.* 2560x1440+0+0 " &&
+		xrandr | grep -q "^$AOC connected.* 2560x1440+0+1440 " && return 0
+	xrandr --output "$IIYAMA" $IIYAMA_MODE --pos 0x0 \
+		--output "$AOC" $AOC_MODE --pos 0x1440
+}
+
+# workspaces that hold windows — the ones worth moving. i3 keeps one empty
+# placeholder per output on its own; those are parked instead (see park).
+ws_used() {
+	i3-msg -t get_tree | jq -r '.. | select(.type? == "workspace") | select(.name != "__i3_scratch")
+		| select((.nodes | length) + (.floating_nodes | length) > 0) | .name'
+}
+ws_on() { i3-msg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o) | .name'; }
+
+# place OUTPUT WS...: criteria-addressed, so the focused workspace is never
+# switched away first (workspace_auto_back_and_forth would bounce). The
+# moved workspace does get focus, though — refocus puts it back.
+place() {
+	out=$1
+	shift
+	for ws; do
+		i3-msg "[workspace=\"^$ws\$\"] move workspace to output $out" >/dev/null
+	done
+}
+ws_focused() { i3-msg -t get_workspaces | jq -r '.[] | select(.focused) | .name'; }
+cur=$(ws_focused)
+refocus() { [ "$(ws_focused)" = "$cur" ] || i3-msg "workspace $cur" >/dev/null; }
+
+# The dark output's placeholder gets the lowest free number from the config
+# bindings (e.g. "3:game"), so $mod+3 would land on the dark monitor. Rename
+# it out of the numbered namespace; $mod+N then creates the real one on the
+# focused (visible) output.
+park() {
+	for ws in $(ws_on "$1"); do
+		[ "$ws" = dark ] || i3-msg "rename workspace \"$ws\" to dark" >/dev/null
+	done
+}
+
+# dual has no dark output: a leftover "dark" next to a real workspace stays
+# until visited — i3 drops an empty workspace the moment it is left
+unpark() {
+	i3-msg -t get_workspaces | jq -e 'any(.name == "dark")' >/dev/null &&
+		i3-msg "workspace dark; workspace $cur" >/dev/null
+}
+
+# i3 warps the pointer when focus changes output (mouse_warping output):
+# bounce over to the dark one and back -> cursor lands in the focused window
+warp() { i3-msg "focus output $1; focus output $2" >/dev/null; }
+
+case ${1:-} in
+mirror)
+	# shellcheck disable=SC2086
+	xrandr --output "$AOC" --primary $AOC_MODE --pos 0x0 \
+		--output "$IIYAMA" $IIYAMA_MODE --same-as "$AOC"
+	;;
+game)
+	stacked
+	xrandr --output "$IIYAMA" --primary
+	# shellcheck disable=SC2046
+	place "$IIYAMA" $(ws_used)
+	park "$AOC"
+	refocus
+	warp "$AOC" "$IIYAMA"
+	;;
+aoc)
+	stacked
+	xrandr --output "$AOC" --primary
+	# shellcheck disable=SC2046
+	place "$AOC" $(ws_used)
+	park "$IIYAMA"
+	refocus
+	warp "$IIYAMA" "$AOC"
+	;;
+dual)
+	stacked
+	xrandr --output "$AOC" --primary
+	# shellcheck disable=SC2046,SC2086
+	place "$AOC" $(ws_used | grep -vxF "$(printf '%s\n' $IIYAMA_WORKSPACES)")
+	# shellcheck disable=SC2046,SC2086
+	place "$IIYAMA" $(ws_used | grep -xF "$(printf '%s\n' $IIYAMA_WORKSPACES)")
+	refocus
+	unpark
+	warp "$IIYAMA" "$AOC"
+	;;
+cursor)
+	case $(cat "$STATE" 2>/dev/null) in
+	game) warp "$AOC" "$IIYAMA" ;;
+	dual | aoc) warp "$IIYAMA" "$AOC" ;;
+	esac
+	exit 0
+	;;
+*)
+	echo "usage: monitor-layout mirror|game|dual|aoc|cursor" >&2
+	exit 64
+	;;
+esac
+echo "$1" >"$STATE"
