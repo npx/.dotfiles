@@ -1,19 +1,43 @@
 #!/bin/sh
-# Desktop monitor layouts, picked by hand (i3 $mod+Shift+m -> mode "monitor").
+# Desktop monitor layouts (i3 $mod+Shift+m -> mode "monitor"; `auto` on start).
 # Both monitors hang off the desktop over DP; the AOC is also the macbook's
-# work screen and the iiyama has a free HDMI for a guest. Which machine a
-# monitor shows is decided at the monitor's input button — this script only
-# decides what the desktop puts on its two outputs. (An earlier version
-# asked the iiyama over DDC/CI which input it showed; see git history.)
+# work screen (HDMI) and the iiyama has a free HDMI for a guest. A layout is
+# which machine each monitor shows, so it is also that monitor's INPUT: the
+# script switches inputs over DDC/CI (ddcutil, VCP 0x60, works over the DP
+# aux channel whatever the panel shows) and lays out the desktop's outputs.
 #
-#   mirror  boot default: same picture on both, so whichever monitor is
-#           pointed at the desktop shows it. Also covers "guest + work",
-#           where nobody is looking at the desktop at all.
-#   game    iiyama is primary and holds every workspace — the macbook has
-#           the AOC
-#   dual    macbook off: AOC primary below, iiyama above with web + chat
-#   aoc     guest on the iiyama's HDMI: AOC primary, holds every workspace
+#   mirror  same picture on both. Nobody looks at the desktop ("guest +
+#           work") or the inputs could not be read; inputs are left alone,
+#           so whichever monitor gets pointed at the desktop shows it.
+#   game    iiyama on DP, primary, holds every workspace — AOC to HDMI for
+#           the macbook
+#   dual    both on DP: AOC primary below (game), iiyama above with the rest
+#   aoc     AOC on DP, primary, holds every workspace — iiyama to HDMI for
+#           the guest
+#   speaker aoc only: flip the iiyama's input DP <-> HDMI, nothing else. Its
+#           speakers only play the input it shows, and the desktop's sound
+#           goes out over DP (the DP audio sink is there either way, the link
+#           stays up): on DP it is the desktop's speaker, it shows the dark
+#           placeholder; on HDMI it is the guest's again. The layout stays
+#           aoc — but auto after a reboot reads both on DP and picks dual.
+#   auto    start: the inputs say which layout is on, no need to guess —
+#           dual/game/aoc from which monitors show DP, mirror otherwise
+#   probe   $mod+Shift+m, before the menu shows: read both inputs (~0.5s)
+#           so the pick that follows does not wait for them
 #   cursor  pull the pointer back onto the visible monitor
+#
+# Inputs are only written where they differ from what was read: a set to the
+# value already active still blanks the panel for a moment. The reads run
+# under a lock; a layout takes the same lock first, so a pick right after
+# the menu opened waits for the probe instead of reading again. The probe
+# result is consumed by the pick (a later CLI call reads live, never stale).
+#
+# Existing workspaces are moved by hand (place); workspaces created later
+# would land on the focused output, so each layout also writes
+# `workspace N output O` pins to a snippet the i3 config `include`s, and
+# reloads i3. i3 keeps no empty workspaces, so pins are the only way a
+# not-yet-open workspace knows its monitor (dual: $mod+4 from the AOC still
+# opens chat on the iiyama).
 #
 # Outputs are never switched off: the monitor's DP receiver keeps the link
 # up whatever input its panel shows, so a "dark" output is just one nobody
@@ -21,37 +45,118 @@
 # modeset, no blanking. Only mirror <-> stacked re-sets modes (a few
 # seconds of black on both, the root framebuffer changes size).
 # Primary matters: games/SDL/Wine fullscreen on the primary output.
+#
+# Stacked on the desk, diagonal in X ($AOC_POS): the outputs share no edge,
+# only a corner, so the pointer never slides from one monitor to the other —
+# not onto a dark one, not out of a game. It changes monitor with the focus
+# (workspace switch; i3 warps it, mouse_warping output). Costs i3's
+# directional focus across outputs (focus up/down only looks at outputs that
+# overlap on the other axis), which workspace switches replace anyway.
 # Harmless on the macbook (same i3 config): outputs absent -> exits.
 AOC_MODE="--mode 2560x1440 --rate 144"
+AOC_POS=2560x1440 # stacked: diagonal to the iiyama (0x0), see above
 IIYAMA_MODE="--mode 2560x1440 --rate 143.86" # it defaults to 60Hz
-IIYAMA_WORKSPACES="1:web 4:chat"              # dual only
+WORKSPACES="1:web 2:term 3:game 4:chat 5:misc" # $ws1..5 in the i3 config
+IIYAMA_WORKSPACES="1:web 2:term 4:chat 5:misc" # dual only: AOC keeps only the game
 STATE="${XDG_RUNTIME_DIR:-/tmp}/monitor-layout" # shown in the bar (i3status read_file)
+PINS="$STATE.conf"                              # `include`d by the i3 config
+LOCK="$STATE.lock"                              # held while inputs are read
+IN_AOC="$STATE.aoc" IN_IIYAMA="$STATE.iiyama"   # probe results, consumed by the pick
+DP=x0f   # VCP 0x60 value for DisplayPort: the desktop (both monitors)
+AWAY=x11 # HDMI on both: the macbook on the AOC, the guest on the iiyama
 
 # Outputs are found by the monitor's EDID model name, not by connector: the
 # DP-2/DP-3 assignment silently swapped once when the cables were redone
 # (2026-09-15). The EDID name descriptor is plain ASCII, grep -a finds it.
-output_of() {
+# The connector directory also holds the DP aux i2c adapter (i2c-N), which
+# is the DDC bus: addressing ddcutil by bus skips its scan of every bus
+# (~0.6s -> 0.1-0.4s). Not the connector's `ddc` link — that is the plain
+# i2c bus, which does not answer over DP.
+connector_of() {
 	for c in /sys/class/drm/card*-DP-*; do
 		[ "$(cat "$c/status" 2>/dev/null)" = connected ] || continue
 		grep -aq "$1" "$c/edid" 2>/dev/null || continue
-		basename "$c" | sed 's/^card[0-9]*-//'
+		basename "$c"
 		return
 	done
 }
-AOC=$(output_of Q27G4)
-IIYAMA=$(output_of PL2760Q)
-[ -n "$AOC" ] && [ -n "$IIYAMA" ] || exit 0
+bus_of() {
+	for b in "/sys/class/drm/$1"/i2c-*; do
+		[ -e "$b" ] && echo "${b##*/i2c-}" && return
+	done
+}
+AOC_CONN=$(connector_of Q27G4)
+IIYAMA_CONN=$(connector_of PL2760Q)
+[ -n "$AOC_CONN" ] && [ -n "$IIYAMA_CONN" ] || exit 0
+AOC=${AOC_CONN#card*-}
+IIYAMA=${IIYAMA_CONN#card*-}
+AOC_BUS=$(bus_of "$AOC_CONN")
+IIYAMA_BUS=$(bus_of "$IIYAMA_CONN")
 
-# iiyama above the AOC. Idempotent: only modesets when the geometry differs
-# (i.e. coming from mirror), so game/dual/aoc switch without blanking.
+# --- DDC ---------------------------------------------------------------------
+# The iiyama's input select (OSD) must be manual, not Auto: on Auto it falls
+# back to showing DP when HDMI has no signal — aoc with no guest plugged in
+# leaves the desktop on it, and 0x60 then reads x00, not x0f (2026-09-18).
+ddc() { command -v ddcutil >/dev/null && [ -n "$AOC_BUS" ] && [ -n "$IIYAMA_BUS" ]; }
+
+# input BUS: current VCP 0x60 value (x0f, x11, ...; x00 = standby, no signal
+# on the selected input). DDC reads occasionally come back empty — one retry.
+input() {
+	for _ in 1 2; do
+		v=$(ddcutil getvcp 60 --bus "$1" --terse 2>/dev/null | awk '{print $4}')
+		[ -n "$v" ] && break
+	done
+	echo "$v"
+}
+
+# read both inputs in parallel under the lock, into the probe files
+probe() {
+	ddc || return 0
+	exec 9>"$LOCK"
+	flock 9
+	input "$AOC_BUS" >"$IN_AOC" &
+	input "$IIYAMA_BUS" >"$IN_IIYAMA" &
+	wait
+}
+
+# AOC_IN / IIYAMA_IN from the probe (waits for one in flight, consumes the
+# result); no probe -> read live. Empty = unreadable.
+inputs() {
+	AOC_IN='' IIYAMA_IN=''
+	ddc || return 0
+	exec 9>"$LOCK"
+	flock 9
+	[ -e "$IN_AOC" ] && [ -e "$IN_IIYAMA" ] || probe
+	AOC_IN=$(cat "$IN_AOC") IIYAMA_IN=$(cat "$IN_IIYAMA")
+	rm -f "$IN_AOC" "$IN_IIYAMA"
+}
+
+# set_input BUS VALUE CURRENT: write only on a difference (see header)
+set_input() {
+	[ "$3" = "$2" ] && return 0
+	ddcutil setvcp 60 "$2" --bus "$1" >/dev/null 2>&1
+}
+# switch AOC_VALUE IIYAMA_VALUE: both monitors at once, in the background
+# (the i3 work meanwhile; `wait` at the end)
+switch() {
+	ddc || return 0
+	set_input "$AOC_BUS" "$1" "$AOC_IN" &
+	set_input "$IIYAMA_BUS" "$2" "$IIYAMA_IN" &
+}
+
+# --- outputs -----------------------------------------------------------------
+# iiyama above the AOC (diagonal in X). Idempotent: only modesets when the
+# geometry differs (i.e. coming from mirror), so game/dual/aoc switch without
+# blanking.
 # shellcheck disable=SC2086
 stacked() {
 	xrandr | grep -q "^$IIYAMA connected.* 2560x1440+0+0 " &&
-		xrandr | grep -q "^$AOC connected.* 2560x1440+0+1440 " && return 0
+		xrandr | grep -q "^$AOC connected.* 2560x1440+$(echo "$AOC_POS" | tr x +) " && return 0
 	xrandr --output "$IIYAMA" $IIYAMA_MODE --pos 0x0 \
-		--output "$AOC" $AOC_MODE --pos 0x1440
+		--output "$AOC" $AOC_MODE --pos "$AOC_POS"
 }
 
+# --- i3 ----------------------------------------------------------------------
 # workspaces that hold windows — the ones worth moving. i3 keeps one empty
 # placeholder per output on its own; those are parked instead (see park).
 ws_used() {
@@ -59,6 +164,7 @@ ws_used() {
 		| select((.nodes | length) + (.floating_nodes | length) > 0) | .name'
 }
 ws_on() { i3-msg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o) | .name'; }
+ws_hidden_on() { i3-msg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o and (.visible | not)) | .name'; }
 
 # place OUTPUT WS...: criteria-addressed, so the focused workspace is never
 # switched away first (workspace_auto_back_and_forth would bounce). The
@@ -75,13 +181,35 @@ cur=$(ws_focused)
 refocus() { [ "$(ws_focused)" = "$cur" ] || i3-msg "workspace $cur" >/dev/null; }
 
 # The dark output's placeholder gets the lowest free number from the config
-# bindings (e.g. "3:game"), so $mod+3 would land on the dark monitor. Rename
-# it out of the numbered namespace; $mod+N then creates the real one on the
-# focused (visible) output.
+# bindings (e.g. "3:game"), so $mod+3 would land on the dark monitor: it is
+# visible there, so i3 never drops it and the pin (new workspaces only) does
+# not help. Leave "dark" as the output's only workspace; $mod+N then creates
+# the real one on its pinned (visible) output.
+# Not by renaming the placeholder: that fails once a "dark" exists (hidden
+# behind it, or on the other output after aoc <-> game) and the numbered name
+# stays. Walk the output instead: everything left on it is empty (place ran),
+# and i3 drops an empty workspace when it is left. Dark first (drops the
+# visible one), then each hidden one with dark right after it: a hidden empty
+# workspace lives until it is shown, so it still exists when its turn comes.
+# Never name one that may be gone already -- `workspace N` on a name that no
+# longer exists creates it, on its pinned output, and the focus (and dark)
+# goes with it. That is how boot left 1:web on the dark AOC: i3 had folded
+# the vanished output's workspaces onto it, two empties, and visiting the
+# first one dropped the visible second before its turn (2026-09-28).
+# A dark on the other output would be focused instead of created here:
+# rename it out of the way, sweep drops it once $cur covers it (after
+# refocus).
 park() {
-	for ws in $(ws_on "$1"); do
-		[ "$ws" = dark ] || i3-msg "rename workspace \"$ws\" to dark" >/dev/null
+	ws_on "$1" | grep -qx dark || i3-msg 'rename workspace dark to undark' >/dev/null 2>&1
+	cmd="focus output $1; workspace --no-auto-back-and-forth dark"
+	for ws in $(ws_hidden_on "$1"); do
+		[ "$ws" = dark ] || cmd="$cmd; workspace --no-auto-back-and-forth \"$ws\"; workspace --no-auto-back-and-forth dark"
 	done
+	i3-msg "$cmd" >/dev/null
+}
+sweep() {
+	i3-msg -t get_workspaces | jq -e 'any(.name == "undark")' >/dev/null &&
+		i3-msg "workspace --no-auto-back-and-forth undark; workspace --no-auto-back-and-forth $cur" >/dev/null
 }
 
 # dual has no dark output: a leftover "dark" next to a real workspace stays
@@ -91,37 +219,108 @@ unpark() {
 		i3-msg "workspace dark; workspace $cur" >/dev/null
 }
 
+# pin OUTPUT WS...: workspace -> output for workspaces that do not exist yet.
+# Appends; `pins` truncates first and `reload` makes i3 read the snippet
+# (no restart: windows and layouts stay). i3 ignores a pin whose output is
+# gone (mirror: the clone folds into one output), so pins are never fatal.
+pins() { : >"$PINS"; }
+pin() {
+	out=$1
+	shift
+	for ws; do
+		echo "workspace \"$ws\" output $out" >>"$PINS"
+	done
+}
+reload() { i3-msg reload >/dev/null; }
+
 # i3 warps the pointer when focus changes output (mouse_warping output):
 # bounce over to the dark one and back -> cursor lands in the focused window
 warp() { i3-msg "focus output $1; focus output $2" >/dev/null; }
 
+# --- layouts -----------------------------------------------------------------
 case ${1:-} in
+probe)
+	probe
+	exit 0
+	;;
+auto)
+	# A read at boot can fail while the panels wake up: that, and both
+	# monitors away, is mirror. inputs() consumed the probe files; write
+	# them again so the layout below does not read a second time.
+	inputs
+	case "$AOC_IN/$IIYAMA_IN" in
+	"$DP/$DP") layout=dual ;;
+	*/"$DP") layout=game ;;
+	"$DP"/*) layout=aoc ;;
+	*) layout=mirror ;;
+	esac
+	if ddc; then
+		echo "$AOC_IN" >"$IN_AOC"
+		echo "$IIYAMA_IN" >"$IN_IIYAMA"
+	fi
+	exec "$0" "$layout"
+	;;
 mirror)
 	# shellcheck disable=SC2086
 	xrandr --output "$AOC" --primary $AOC_MODE --pos 0x0 \
 		--output "$IIYAMA" $IIYAMA_MODE --same-as "$AOC"
+	pins # none: one output either way; drops the previous layout's pins
+	reload
 	;;
 game)
+	inputs
+	switch "$AWAY" "$DP"
 	stacked
 	xrandr --output "$IIYAMA" --primary
+	pins
+	# shellcheck disable=SC2086
+	pin "$IIYAMA" $WORKSPACES
+	reload
 	# shellcheck disable=SC2046
 	place "$IIYAMA" $(ws_used)
 	park "$AOC"
 	refocus
+	sweep
 	warp "$AOC" "$IIYAMA"
 	;;
 aoc)
+	inputs
+	switch "$DP" "$AWAY"
 	stacked
 	xrandr --output "$AOC" --primary
+	pins
+	# shellcheck disable=SC2086
+	pin "$AOC" $WORKSPACES
+	reload
 	# shellcheck disable=SC2046
 	place "$AOC" $(ws_used)
 	park "$IIYAMA"
 	refocus
+	sweep
 	warp "$IIYAMA" "$AOC"
 	;;
+speaker)
+	[ "$(cat "$STATE" 2>/dev/null)" = aoc ] || {
+		echo "monitor-layout: speaker needs the aoc layout" >&2
+		exit 1
+	}
+	inputs
+	if [ "$IIYAMA_IN" = "$DP" ]; then to=$AWAY; else to=$DP; fi
+	switch "$AOC_IN" "$to" # the AOC's own value: no write (set_input)
+	wait
+	exit 0
+	;;
 dual)
+	inputs
+	switch "$DP" "$DP"
 	stacked
 	xrandr --output "$AOC" --primary
+	pins
+	# shellcheck disable=SC2046,SC2086
+	pin "$AOC" $(printf '%s\n' $WORKSPACES | grep -vxF "$(printf '%s\n' $IIYAMA_WORKSPACES)")
+	# shellcheck disable=SC2086
+	pin "$IIYAMA" $IIYAMA_WORKSPACES
+	reload
 	# shellcheck disable=SC2046,SC2086
 	place "$AOC" $(ws_used | grep -vxF "$(printf '%s\n' $IIYAMA_WORKSPACES)")
 	# shellcheck disable=SC2046,SC2086
@@ -138,8 +337,9 @@ cursor)
 	exit 0
 	;;
 *)
-	echo "usage: monitor-layout mirror|game|dual|aoc|cursor" >&2
+	echo "usage: monitor-layout mirror|game|dual|aoc|speaker|auto|probe|cursor" >&2
 	exit 64
 	;;
 esac
 echo "$1" >"$STATE"
+wait # input switches still in flight
