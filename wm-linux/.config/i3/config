@@ -11,9 +11,11 @@ font pango:FiraCode Nerd Font 10
 # xterm styling (fonts + colors) lives in ~/.Xresources
 exec_always --no-startup-id xrdb -merge ~/.Xresources
 
-# key remaps (caps->ctrl, rctrl->;:, ralt->'") — resets on keyboard hotplug,
-# $mod+Shift+c re-applies
-exec_always --no-startup-id xmodmap ~/.Xmodmap
+# key remaps (caps->ctrl, space = $mod while held) are keyd, nix-level
+# (modules/nixos/desktop.nix). Games need a real held space: the mapper
+# swaps it back per focused window (~/.config/keyd/app.conf).
+# `exec`: -d forks a daemon that outlives restarts, app.lock stops a second one.
+exec --no-startup-id keyd-application-mapper -d
 
 # desktop monitors: on start the layout follows the monitors' input sources
 # (read over DDC), later picked by hand ($mod+Shift+m, mode "monitor"
