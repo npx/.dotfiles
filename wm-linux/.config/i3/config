@@ -17,6 +17,10 @@ exec_always --no-startup-id xrdb -merge ~/.Xresources
 # `exec`: -d forks a daemon that outlives restarts, app.lock stops a second one.
 exec --no-startup-id keyd-application-mapper -d
 
+# japanese input (fcitx5 + mozc, nix-level in modules/nixos/desktop.nix;
+# keys in ~/.config/fcitx5/config). -d daemonizes, a second start is a no-op.
+exec --no-startup-id fcitx5 -d
+
 # desktop monitors: on start the layout follows the monitors' input sources
 # (read over DDC), later picked by hand ($mod+Shift+m, mode "monitor"
 # below). `exec`, not exec_always: a restart must not redo the layout that

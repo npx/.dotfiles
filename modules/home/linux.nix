@@ -12,5 +12,7 @@
     gcc # nvim-treesitter compiles parsers at runtime; macOS has xcode clang, linux has nothing
     python3 # mason installs pypi packages (ruff, ty) via venv+pip; macOS has CLT python
     pavucontrol # pipewire GUI mixer — per-app + per-device routing
+    maim # X11 screenshots; pulls slop for the region picker (i3 Print bindings)
+    xdotool # active-window id for the Shift+Print window shot
   ];
 }
