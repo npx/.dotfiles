@@ -98,6 +98,15 @@ assign [class="(?i)^pavucontrol$"] $ws5
 # step away: full suspend — jellyfin is down until a key press wakes the box
 bindsym $mod+Shift+s exec --no-startup-id systemctl suspend
 
+# screenshots (maim, modules/home/linux.nix): Print = drag a region,
+# Shift+Print = focused window, $mod+Print = whole screen. Each lands in
+# ~/Pictures/screenshots and on the clipboard.
+set $shot exec --no-startup-id mkdir -p ~/Pictures/screenshots && f=~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png && maim
+set $shot_clip | tee "$f" | xclip -selection clipboard -t image/png
+bindsym Print $shot -s -u $shot_clip
+bindsym Shift+Print $shot -u -i $(xdotool getactivewindow) $shot_clip
+bindsym $mod+Print $shot -u $shot_clip
+
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec i3-msg exit

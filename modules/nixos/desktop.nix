@@ -15,7 +15,16 @@ in
     # tuigreet launches xsession entries via its default wrapper
     # (`startx /usr/bin/env`); startx.enable provides the binary.
     displayManager.startx.enable = true;
-    xkb.layout = "us";
+    xkb.layout = "jp"; # JIS board (Apex Pro Mini)
+  };
+
+  # Japanese input: fcitx5 + mozc. The module sets the IM env vars; the
+  # daemon is started by i3 (no XDG autostart there). Keys + input method
+  # list: wm-linux/.config/fcitx5.
+  i18n.inputMethod = {
+    enable = true;
+    type = "fcitx5";
+    fcitx5.addons = [ pkgs.fcitx5-mozc ];
   };
 
   # Key remaps at evdev level, below X. Not xmodmap: X drops its xmodmap
