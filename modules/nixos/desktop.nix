@@ -75,6 +75,22 @@ in
   # sets union across lines; seccomp already lets setgid through.
   systemd.services.keyd.serviceConfig.CapabilityBoundingSet = [ "CAP_SETGID" ];
 
+  # Rainy 75 (Wobkey, JIS): the firmware is VIA-compatible — remaps are done
+  # in the browser (usevia.app, WebHID) over the board's raw-HID interface,
+  # no vendor software, no flashing. hidraw nodes are root-only by default;
+  # uaccess hands the seated user an ACL. Must sort before 73-seat-late.rules
+  # (which turns the tag into the ACL), so NOT services.udev.extraRules
+  # (= 99-local.rules). 0x5055 = wired, 0x5088 = the 2.4G dongle.
+  services.udev.packages = [
+    (pkgs.writeTextFile {
+      name = "rainy75-udev-rules";
+      destination = "/etc/udev/rules.d/70-rainy75.rules";
+      text = ''
+        KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="320f", ATTRS{idProduct}=="5055|5088", TAG+="uaccess"
+      '';
+    })
+  ];
+
   # Sessions auto-register into sessionData: i3 -> xsessions, steam gamescope
   # session (desktop host only) -> wayland-sessions; tuigreet lists both dirs.
   # NOT /run/current-system/sw/share/... — never populated without sddm.
