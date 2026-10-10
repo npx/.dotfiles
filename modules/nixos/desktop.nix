@@ -48,6 +48,14 @@ in
       # menu, suspend). Free because mozc only maps it to "hiragana mode",
       # which is already the default — the IME never misses it.
       katakanahiragana = "layer(kana)";
+      # No Print key on this board: End is Print, Home a second Backspace.
+      # `sysrq` is PrtSc itself (keyd's `print` is KEY_PRINT, the consumer-
+      # page "AC Print"); X maps it to the Print keysym the i3 screenshot
+      # bindings use. Modifier layers fall through to main with their
+      # modifier applied, so Shift+End / mod+End stay the window / whole-
+      # screen shots.
+      end = "sysrq";
+      home = "backspace";
     };
     # `[kana:M-S]`: a layer that is itself the Meta+Shift modifier pair, no
     # bindings of its own — keyd emits Mod4+Shift+<key> for whatever is
