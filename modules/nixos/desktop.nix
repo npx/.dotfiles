@@ -113,6 +113,47 @@ in
     alsa.enable = true;
     pulse.enable = true;
     # alsa.support32Bit lives in gaming.nix — i686, x86_64-only
+
+    # "All outputs": one virtual sink fanning out to every ALSA output
+    # (HDMI monitor, onboard IEC958, PRO X headset). Apps play on all of them
+    # at once, so there is nothing to switch when picking up the headset, and
+    # the media keys (i3: @DEFAULT_AUDIO_SINK@) act as a master volume.
+    # Per-device trim stays on the hardware sinks (pavucontrol, ws5).
+    # Streams come and go with the devices (regex match, no fixed names).
+    # priority.session 2000 beats every ALSA sink (584..1109) so wireplumber
+    # picks it by default — unless a default was stored by hand; then once:
+    #   wpctl set-default $(wpctl status | grep -oP '\d+(?=\. combine_output)')
+    # A rebuild does NOT restart the user daemons — after changing this:
+    #   systemctl --user restart pipewire pipewire-pulse wireplumber
+    extraConfig.pipewire."60-combine-sink" = {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-combine-stream";
+          args = {
+            "combine.mode" = "sink";
+            "node.name" = "combine_output";
+            "node.description" = "All outputs";
+            "combine.latency-compensate" = false;
+            "combine.props" = {
+              "audio.position" = [ "FL" "FR" ];
+              "priority.session" = 2000;
+            };
+            "stream.props" = { };
+            "stream.rules" = [
+              {
+                matches = [
+                  {
+                    "media.class" = "Audio/Sink";
+                    "node.name" = "~alsa_output.*";
+                  }
+                ];
+                actions.create-stream = { };
+              }
+            ];
+          };
+        }
+      ];
+    };
   };
 
   # i3 binds $mod+Return to xterm — the session module owns its terminal.
