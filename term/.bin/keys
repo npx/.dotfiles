@@ -26,12 +26,10 @@ hdr() {
 
 printf '\n'
 hdr "Remaps" "Screenshots"
-row "mod"                "Space held / Win"   "End (Print)"  "region (drag)"
+row "mod"                "Space held / Win"   "Print"        "region (drag)"
 printf "  ${K}%-19s${R}かな held (JIS)     ${K}%-13s${R}%s\n" \
-    "mod+Shift"                               "Shift+End"    "focused window"
-row "Ctrl"               "Caps Lock"          "mod+End"      "whole screen"
-printf "  ${K}%-19s${R}%s\n" \
-    "Backspace"          "Home"
+    "mod+Shift"                               "Shift+Print"  "focused window"
+row ""                   ""                   "mod+Print"    "whole screen"
 printf "    ${D}%-35s${R}    ${D}%s${R}\n" \
     "Steam games: plain Space, mod = Win"        "→ ~/Pictures/screenshots + clipboard"
 printf '\n'
