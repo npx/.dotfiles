@@ -1,0 +1,3 @@
+# keyd-application-mapper runtime files (dir is stow-linked into ~/.config)
+app.lock
+app.log

@@ -11,14 +11,21 @@ font pango:FiraCode Nerd Font 10
 # xterm styling (fonts + colors) lives in ~/.Xresources
 exec_always --no-startup-id xrdb -merge ~/.Xresources
 
-# key remaps (caps->ctrl, rctrl->;:, ralt->'") — resets on keyboard hotplug,
-# $mod+Shift+c re-applies
-exec_always --no-startup-id xmodmap ~/.Xmodmap
+# key remaps (caps->ctrl, space = $mod while held) are keyd, nix-level
+# (modules/nixos/desktop.nix). Games need a real held space: the mapper
+# swaps it back per focused window (~/.config/keyd/app.conf).
+# `exec`: -d forks a daemon that outlives restarts, app.lock stops a second one.
+exec --no-startup-id keyd-application-mapper -d
 
-# desktop monitors: mirror both on start, then pick a layout by hand
-# ($mod+Shift+m, mode "monitor" below). `exec`, not exec_always: a restart
-# must not throw away the layout that was picked. No-op on the macbook.
-exec --no-startup-id ~/.bin/monitor-layout mirror
+# japanese input (fcitx5 + mozc, nix-level in modules/nixos/desktop.nix;
+# keys in ~/.config/fcitx5/config). -d daemonizes, a second start is a no-op.
+exec --no-startup-id fcitx5 -d
+
+# desktop monitors: on start the layout follows the monitors' input sources
+# (read over DDC), later picked by hand ($mod+Shift+m, mode "monitor"
+# below). `exec`, not exec_always: a restart must not redo the layout that
+# was picked. No-op on the macbook.
+exec --no-startup-id ~/.bin/monitor-layout auto
 
 # drag floating windows with $mod
 floating_modifier $mod
@@ -44,6 +51,8 @@ bindsym $mod+f fullscreen toggle
 bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
+bindsym $mod+a focus parent
+bindsym $mod+Shift+a focus child
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
 
@@ -59,6 +68,12 @@ set $ws2 "2:term"
 set $ws3 "3:game"
 set $ws4 "4:chat"
 set $ws5 "5:misc"
+
+# workspace -> output pins for the current monitor layout, written by
+# term/.bin/monitor-layout (reloads i3). Runtime dir: gone on reboot, and the
+# mirror exec on start writes it again. Skipped by i3 while it does not exist
+# (first start, macbook).
+include $XDG_RUNTIME_DIR/monitor-layout.conf
 
 bindsym $mod+1 workspace $ws1
 bindsym $mod+2 workspace $ws2
@@ -84,9 +99,26 @@ focus_follows_mouse no
 assign [class="(?i)^google-chrome$"] $ws1
 assign [class="(?i)^steam$"] $ws3
 assign [class="(?i)^discord$"] $ws4
+assign [class="(?i)^pavucontrol$"] $ws5
 
 # step away: full suspend — jellyfin is down until a key press wakes the box
 bindsym $mod+Shift+s exec --no-startup-id systemctl suspend
+
+# audio (media keys): wpctl = wireplumber; acts on pipewire's default sink.
+# That is "All outputs" (modules/nixos/desktop.nix combine sink) = master
+# volume over every device; per-device trim via pavucontrol on ws5.
+bindsym XF86AudioRaiseVolume exec --no-startup-id wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec --no-startup-id wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioMute exec --no-startup-id wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# screenshots (maim, modules/home/linux.nix): Print = drag a region,
+# Shift+Print = focused window, $mod+Print = whole screen. Each lands in
+# ~/Pictures/screenshots and on the clipboard.
+set $shot exec --no-startup-id mkdir -p ~/Pictures/screenshots && f=~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png && maim
+set $shot_clip | tee "$f" | xclip -selection clipboard -t image/png
+bindsym Print $shot -s -u $shot_clip
+bindsym Shift+Print $shot -u -i $(xdotool getactivewindow) $shot_clip
+bindsym $mod+Print $shot -u $shot_clip
 
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
@@ -102,27 +134,35 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-# desktop monitor layouts (term/.bin/monitor-layout): which machine a monitor
-# shows is set at its input button; this only picks what the desktop outputs
-#   m  mirror — both, same picture (start default; also "guest + work")
-#   g  game   — everything on the iiyama, primary (macbook has the AOC)
-#   d  dual   — AOC primary, iiyama above with web + chat
-#   a  aoc    — everything on the AOC, primary (guest on the iiyama's HDMI)
-#   c  cursor — pointer back onto the visible monitor (outputs stay on, so
-#               it can slide onto the dark one; the script warps via i3)
+# desktop monitor layouts (term/.bin/monitor-layout): a layout is which
+# machine each monitor shows — the script switches the monitors' inputs
+# over DDC and lays out the desktop's outputs to match
+#   m  mirror — both, same picture; inputs untouched ("guest + work")
+#   g  game   — iiyama to the desktop, primary, everything; AOC to the macbook
+#   d  dual   — both to the desktop: AOC primary (game), iiyama above with the rest
+#   a  aoc    — AOC to the desktop, primary, everything; iiyama to the guest
+#   s  speaker — in aoc: iiyama's input DP <-> HDMI, layout untouched (its
+#               speakers play only the input it shows; DP is the desktop)
+#   c  cursor — pointer back onto the visible monitor (the outputs sit
+#               diagonally, it cannot slide across — but focus can still
+#               leave it on the dark one; the script warps via i3)
+# Opening the menu already reads the inputs (probe), so the pick is instant
+# and only writes an input that actually changes (a rewrite blanks briefly).
+# Existing workspaces are moved; new ones follow the `include`d pins above.
 # The mode name is the cheat sheet: i3bar shows it while the mode is active.
 # The active layout shows permanently in the bar (i3status read_file).
-set $monitor_mode "monitor: [m]irror  [g]ame  [d]ual  [a]oc  [c]ursor  (esc)"
+set $monitor_mode "monitor: [m]irror  [g]ame  [d]ual  [a]oc  [s]peaker  [c]ursor  (esc)"
 mode $monitor_mode {
   bindsym m exec --no-startup-id ~/.bin/monitor-layout mirror; mode "default"
   bindsym g exec --no-startup-id ~/.bin/monitor-layout game; mode "default"
   bindsym d exec --no-startup-id ~/.bin/monitor-layout dual; mode "default"
   bindsym a exec --no-startup-id ~/.bin/monitor-layout aoc; mode "default"
+  bindsym s exec --no-startup-id ~/.bin/monitor-layout speaker; mode "default"
   bindsym c exec --no-startup-id ~/.bin/monitor-layout cursor; mode "default"
   bindsym Return mode "default"
   bindsym Escape mode "default"
 }
-bindsym $mod+Shift+m mode $monitor_mode
+bindsym $mod+Shift+m exec --no-startup-id ~/.bin/monitor-layout probe; mode $monitor_mode
 
 # everforest dark-medium — WM only; xterm palette stays alacritty-default (see ~/.Xresources)
 set $bg     #2d353b
@@ -133,10 +173,12 @@ set $grey   #859289
 set $green  #a7c080
 set $red    #e67e80
 set $yellow #dbbc7f
+set $orange #e69875
 set $aqua   #83c092
 
+# indicator (orange) is only drawn on a window that is ALONE in its split container
 # class                 border bg     text  indicator child_border
-client.focused          $green $green $bg   $yellow $green
+client.focused          $green $green $bg   $orange $green
 client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
 client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
 client.urgent           $red   $red   $bg   $red   $red
