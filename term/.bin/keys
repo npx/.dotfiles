@@ -44,6 +44,7 @@ row "mod+Shift+h/j/k/l"  "move window"        "mod+e"        "layout toggle spli
 row "mod+f"              "fullscreen toggle"  "mod+r"        "resize mode: h/j/k/l"
 row "mod+space"          "focus float/tiled"  ""             "Return/Esc leaves"
 row "mod+Shift+space"    "floating toggle"    "mod+drag"     "move, right-drag resizes"
+row "mod+a / +Shift+a"   "focus parent/child" ""             "new window lands beside group"
 printf '\n'
 hdr "Workspaces" "System"
 row "mod+1..5"           "go to workspace"    "mod+Shift+s"  "suspend"

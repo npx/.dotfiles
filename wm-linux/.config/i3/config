@@ -51,6 +51,8 @@ bindsym $mod+f fullscreen toggle
 bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
+bindsym $mod+a focus parent
+bindsym $mod+Shift+a focus child
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
 
@@ -164,10 +166,12 @@ set $grey   #859289
 set $green  #a7c080
 set $red    #e67e80
 set $yellow #dbbc7f
+set $orange #e69875
 set $aqua   #83c092
 
+# indicator (orange) is only drawn on a window that is ALONE in its split container
 # class                 border bg     text  indicator child_border
-client.focused          $green $green $bg   $yellow $green
+client.focused          $green $green $bg   $orange $green
 client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
 client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
 client.urgent           $red   $red   $bg   $red   $red
