@@ -22,7 +22,9 @@ let
   # (e.g. "Library" for "Library/Application Support") — the walk only
   # consults this list for paths it has already recursed into. A missing
   # ancestor silently links the ancestor dir wholesale.
-  containers = [ ".config" "Library" "Library/Application Support" ];
+  # ".bin" is merged so that wm-linux can add desktop-only scripts next to
+  # term's; the price is that a brand-new script needs `git add` + rebuild.
+  containers = [ ".bin" ".config" "Library" "Library/Application Support" ];
 
   walk = pkg: rel:
     let
