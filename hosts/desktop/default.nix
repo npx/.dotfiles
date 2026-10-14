@@ -29,7 +29,7 @@
     fsType = "ext4";
   };
 
-  # monitor-layout (term/.bin, i3 exec + $mod+Shift+m): both monitors are
+  # monitor-layout (term/.bin, sway exec + $mod+Shift+m): both monitors are
   # shared with other machines (macbook, guest) and keep their DP link up on
   # any input, so the desktop reads and switches their input source over
   # DDC/CI (ddcutil, VCP 0x60). hardware.i2c loads i2c-dev and grants the
@@ -43,7 +43,7 @@
     ddcutil # monitor-layout
   ];
 
-  # suspend from i3 ($mod+Shift+s). r8169 re-inits the PHY on resume, which
+  # suspend from sway ($mod+Shift+s). r8169 re-inits the PHY on resume, which
   # can resurrect EEE — powerManagement.enable provides post-resume.target,
   # where the disable-eee oneshot below gets re-run
   powerManagement.enable = true;

@@ -1,0 +1,98 @@
+// waybar — the bar (wm-linux/.config/sway/config `bar { swaybar_command
+// waybar }`; package in modules/nixos/desktop.nix). Everforest colours in
+// style.css, nerd-font icons, all from waybar's own modules: nothing is
+// polled by a script. Why not swaybar: it draws no tray menus (Steam,
+// Discord, fcitx5 publish theirs over dbusmenu; waybar renders them).
+// Plain dotfile, stow-linked: edits apply on $mod+Shift+c (sway restarts the
+// bar), no rebuild.
+{
+  "layer": "top",
+  "position": "top",
+  "height": 26,
+  "spacing": 0,
+  "modules-left": ["sway/workspaces", "sway/mode"],
+  "modules-center": [],
+  "modules-right": [
+    "network",
+    "disk",
+    "cpu",
+    "memory",
+    "custom/monitor",
+    "wireplumber",
+    "clock",
+    "tray"
+  ],
+
+  // one bar per output, each showing its own workspaces; {value} is the
+  // full name, {name} would strip the "N:" prefix
+  "sway/workspaces": {
+    "all-outputs": false,
+    "disable-scroll": true,
+    "format": "{value}"
+  },
+  // the active binding mode: the monitor menu's mode name is its cheat sheet
+  "sway/mode": {
+    "format": "{}",
+    "tooltip": false
+  },
+
+  // desktop NIC (hosts/desktop/default.nix): nothing while the link is up
+  // (an empty format hides the module), a red icon + "down" when it is not
+  "network": {
+    "interface": "enp42s0",
+    "format": "",
+    "format-disconnected": "󰈂 down",
+    "tooltip": false
+  },
+  // icons dimmed grey (pango markup; a warning class colours the value only)
+  // `warning` at 90% used (yellow, style.css)
+  "disk": {
+    "path": "/",
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰋊</span> {free}",
+    "states": { "warning": 90 },
+    "interval": 30
+  },
+  "cpu": {
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰻠</span> {usage}%",
+    "states": { "warning": 70, "critical": 90 },
+    "interval": 5
+  },
+  // `warning` below 10% free (red, style.css)
+  "memory": {
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰍛</span> {used:0.1f}/{total:0.0f}G",
+    "states": { "warning": 90 },
+    "interval": 5
+  },
+  // active desktop monitor layout, written by term/.bin/monitor-layout
+  // ($mod+Shift+m), which signals the bar (RTMIN+8) after each write: read
+  // at start and on the signal, not polled. Empty output hides the module
+  // (the macbook: no file).
+  "custom/monitor": {
+    "exec": "cat \"$XDG_RUNTIME_DIR/monitor-layout\" 2>/dev/null",
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰍹</span> {}",
+    "interval": "once",
+    "signal": 8,
+    "tooltip": false
+  },
+  // pipewire's default sink ("All outputs" combine sink = master volume);
+  // scrolling steps it like the media keys, click opens the mixer (ws5)
+  "wireplumber": {
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰕾</span> {volume}%",
+    "format-muted": "<span color='#859289' size='115%' rise='-1pt'>󰖁</span> muted",
+    "max-volume": 100,
+    "scroll-step": 5,
+    "on-click": "pavucontrol",
+    "tooltip": false
+  },
+  "clock": {
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰃭</span> {:%a %d %b  %H:%M}",
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "interval": 60
+  },
+  // items in registration order: fcitx5 starts before any app (sway config
+  // exec) and so sits rightmost — a mid-session fcitx5 restart moves it
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  }
+}

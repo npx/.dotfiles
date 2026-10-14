@@ -1,0 +1,171 @@
+# sway config for the gaming desktop (term/.bin/keys is the cheat sheet).
+# Stow-linked: edits apply on reload, no rebuild. Steam, chrome and discord
+# are X11 clients under Xwayland.
+
+set $mod Mod4
+
+font pango:FiraCode Nerd Font 10
+
+# JIS board; keyd's remaps sit below this (evdev)
+input type:keyboard xkb_layout jp
+
+# NixOS session glue: env into systemd/D-Bus, sway-session.target (portals,
+# screen sharing). exec lines run on start only, not on reload.
+include /etc/sway/config.d/*
+
+# keyd: space = $mod while held, かな = $mod+Shift; games get a real space
+# per focused window (~/.config/keyd/app.conf)
+exec keyd-application-mapper -d
+
+# japanese input
+exec fcitx5 -d
+
+# monitor layout on start follows the monitors' inputs (DDC); later by hand
+# ($mod+Shift+m). exec, not exec_always: a reload must not redo it.
+exec ~/.bin/monitor-layout auto
+
+# blank outputs after 10 min, no lock (single-user box)
+exec swayidle -w timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"'
+
+# ... except behind a fullscreen game or chrome (jellyfin, youtube)
+for_window [class="(?i)^steam_app_"] inhibit_idle fullscreen
+for_window [class="(?i)^google-chrome$"] inhibit_idle fullscreen
+
+# Proton asks for fullscreen too late, sway has already tiled the game
+for_window [class="(?i)^steam_app_"] fullscreen enable
+
+# drag floating windows with $mod
+floating_modifier $mod
+
+bindsym $mod+Return exec foot
+bindsym $mod+d exec wmenu-run
+bindsym $mod+Shift+q kill
+
+# vim-style focus/move
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# layout
+bindsym $mod+b split h
+bindsym $mod+v split v
+bindsym $mod+f fullscreen toggle
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+a focus parent
+bindsym $mod+Shift+a focus child
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+
+# gaps + thin borders; titlebars only in stacking/tabbed
+gaps inner 8
+smart_gaps on
+default_border pixel 2
+default_floating_border pixel 2
+hide_edge_borders smart
+
+set $ws1 "1:web"
+set $ws2 "2:term"
+set $ws3 "3:game"
+set $ws4 "4:chat"
+set $ws5 "5:misc"
+
+# outputs + workspace pins for the current layout, written by monitor-layout.
+# Must be a config file: a reload resets output settings made over IPC.
+include $XDG_RUNTIME_DIR/monitor-layout.sway.conf
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+
+workspace_auto_back_and_forth yes
+
+# games re-centre the cursor every frame and would yank focus back
+focus_follows_mouse no
+
+assign [class="(?i)^google-chrome$"] $ws1
+assign [class="(?i)^steam$"] $ws3
+assign [class="(?i)^discord$"] $ws4
+# pavucontrol is GTK, native: app_id org.pulseaudio.pavucontrol
+assign [app_id="(?i)pavucontrol$"] $ws5
+
+bindsym $mod+Shift+s exec systemctl suspend
+
+# media keys act on pipewire's default sink (the combine sink = master volume)
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# screenshots: Print = region, Shift+Print = focused window, $mod+Print =
+# focused output; saved to ~/Pictures/screenshots and the clipboard
+set $shot exec mkdir -p ~/Pictures/screenshots && f=~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png && grim
+set $shot_clip - | tee "$f" | wl-copy -t image/png
+bindsym Print $shot -g "$(slurp)" $shot_clip
+bindsym Shift+Print $shot -g "$(swaymsg -t get_tree | jq -r '.. | select(.focused?) | ((.rect.x + .window_rect.x)|tostring) + "," + ((.rect.y + .window_rect.y)|tostring) + " " + (.window_rect.width|tostring) + "x" + (.window_rect.height|tostring)')" $shot_clip
+bindsym $mod+Print $shot -o "$(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name')" $shot_clip
+
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r reload # no restart on sway; i3 muscle memory
+bindsym $mod+Shift+e exec swaymsg exit
+
+mode "resize" {
+  bindsym h resize shrink width 10 px or 10 ppt
+  bindsym j resize grow height 10 px or 10 ppt
+  bindsym k resize shrink height 10 px or 10 ppt
+  bindsym l resize grow width 10 px or 10 ppt
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# monitor layouts (term/.bin/monitor-layout has the details); the mode name
+# doubles as the cheat sheet in the bar
+set $monitor_mode "monitor: [m]irror  [g]ame  [d]ual  [a]oc  [s]peaker  [c]ursor  (esc)"
+mode $monitor_mode {
+  bindsym m exec ~/.bin/monitor-layout mirror; mode "default"
+  bindsym g exec ~/.bin/monitor-layout game; mode "default"
+  bindsym d exec ~/.bin/monitor-layout dual; mode "default"
+  bindsym a exec ~/.bin/monitor-layout aoc; mode "default"
+  bindsym s exec ~/.bin/monitor-layout speaker; mode "default"
+  bindsym c exec ~/.bin/monitor-layout cursor; mode "default"
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+bindsym $mod+Shift+m exec ~/.bin/monitor-layout probe; mode $monitor_mode
+
+# everforest dark-medium (WM only; terminal palette is in foot.ini)
+set $bg     #2d353b
+set $bg1    #343f44
+set $bg3    #475258
+set $fg     #d3c6aa
+set $grey   #859289
+set $green  #a7c080
+set $red    #e67e80
+set $yellow #dbbc7f
+set $orange #e69875
+set $aqua   #83c092
+
+# class                 border bg     text  indicator child_border
+client.focused          $green $green $bg   $orange $green
+client.focused_inactive $bg3   $bg3   $grey $bg3   $bg3
+client.unfocused        $bg1   $bg1   $grey $bg1   $bg1
+client.urgent           $red   $red   $bg   $red   $red
+
+# waybar, not swaybar: it renders the dbusmenu tray menus (steam, discord, fcitx5)
+bar {
+  swaybar_command waybar
+}

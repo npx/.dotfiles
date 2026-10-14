@@ -9,12 +9,12 @@
   ];
 
   home.packages = with pkgs; [
-    xclip # tmux X11 branch + nvim clipboard autodetect under i3
-    wl-clipboard # tmux Wayland branch (desktop's gamescope session is Wayland)
+    wl-clipboard # tmux copy, nvim clipboard, screenshots
     gcc # nvim-treesitter compiles parsers at runtime; macOS has xcode clang, linux has nothing
     python3 # mason installs pypi packages (ruff, ty) via venv+pip; macOS has CLT python
     pavucontrol # pipewire GUI mixer — per-app + per-device routing
-    maim # X11 screenshots; pulls slop for the region picker (i3 Print bindings)
-    xdotool # active-window id for the Shift+Print window shot
+    grim # screenshots (sway Print bindings) ...
+    slurp # ... with the region picker
+    wl-mirror # "mirror" layout: sway cannot clone an output, monitor-layout shows a live copy instead
   ];
 }

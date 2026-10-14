@@ -1,14 +1,16 @@
 #!/bin/sh
-# Desktop monitor layouts (i3 $mod+Shift+m -> mode "monitor"; `auto` on start).
+# Desktop monitor layouts ($mod+Shift+m -> mode "monitor"; `auto` on start).
 # Both monitors hang off the desktop over DP; the AOC is also the macbook's
 # work screen (HDMI) and the iiyama has a free HDMI for a guest. A layout is
 # which machine each monitor shows, so it is also that monitor's INPUT: the
 # script switches inputs over DDC/CI (ddcutil, VCP 0x60, works over the DP
-# aux channel whatever the panel shows) and lays out the desktop's outputs.
+# aux channel whatever the panel shows) and lays out sway's workspaces.
 #
-#   mirror  same picture on both. Nobody looks at the desktop ("guest +
-#           work") or the inputs could not be read; inputs are left alone,
-#           so whichever monitor gets pointed at the desktop shows it.
+#   mirror  both show the desktop. Nobody looks at it ("guest + work") or
+#           the inputs could not be read; inputs are left alone, so
+#           whichever monitor gets pointed at the desktop shows it. sway
+#           cannot clone an output: everything goes to the AOC and the
+#           iiyama shows a fullscreen live copy of it (wl-mirror).
 #   game    iiyama on DP, primary, holds every workspace — AOC to HDMI for
 #           the macbook
 #   dual    both on DP: AOC primary below (game), iiyama above with the rest
@@ -34,32 +36,33 @@
 #
 # Existing workspaces are moved by hand (place); workspaces created later
 # would land on the focused output, so each layout also writes
-# `workspace N output O` pins to a snippet the i3 config `include`s, and
-# reloads i3. i3 keeps no empty workspaces, so pins are the only way a
+# `workspace N output O` pins to a snippet the sway config `include`s, and
+# reloads sway. sway keeps no empty workspaces, so pins are the only way a
 # not-yet-open workspace knows its monitor (dual: $mod+4 from the AOC still
 # opens chat on the iiyama).
 #
 # Outputs are never switched off: the monitor's DP receiver keeps the link
 # up whatever input its panel shows, so a "dark" output is just one nobody
-# looks at. Everything after the first pick is i3 moves + primary — no
-# modeset, no blanking. Only mirror <-> stacked re-sets modes (a few
-# seconds of black on both, the root framebuffer changes size).
-# Primary matters: games/SDL/Wine fullscreen on the primary output.
+# looks at. The outputs are always stacked, each at its own refresh rate
+# with adaptive sync; no layout ever modesets. Primary matters (games/SDL/
+# Wine fullscreen on the primary output): sway has none, but the games are
+# X11 clients and Xwayland has one — set over xrandr on the XWAYLAND output
+# with the chosen output's geometry.
 #
-# Stacked on the desk, diagonal in X ($AOC_POS): the outputs share no edge,
-# only a corner, so the pointer never slides from one monitor to the other —
-# not onto a dark one, not out of a game. It changes monitor with the focus
-# (workspace switch; i3 warps it, mouse_warping output). Costs i3's
-# directional focus across outputs (focus up/down only looks at outputs that
-# overlap on the other axis), which workspace switches replace anyway.
-# Harmless on the macbook (same i3 config): outputs absent -> exits.
-AOC_MODE="--mode 2560x1440 --rate 144"
+# Stacked on the desk, diagonal in the layout ($AOC_POS): the outputs share
+# no edge, only a corner, so the pointer never slides from one monitor to
+# the other — not onto a dark one, not out of a game. It changes monitor
+# with the focus (workspace switch; mouse_warping output). Costs directional
+# focus across outputs (focus up/down only looks at outputs that overlap on
+# the other axis), which workspace switches replace anyway.
+# Harmless on the macbook: outputs absent -> exits.
+AOC_MODE="mode 2560x1440@180Hz adaptive_sync on"
 AOC_POS=2560x1440 # stacked: diagonal to the iiyama (0x0), see above
-IIYAMA_MODE="--mode 2560x1440 --rate 143.86" # it defaults to 60Hz
-WORKSPACES="1:web 2:term 3:game 4:chat 5:misc" # $ws1..5 in the i3 config
+IIYAMA_MODE="mode 2560x1440@143.86Hz adaptive_sync on" # it defaults to 60Hz
+WORKSPACES="1:web 2:term 3:game 4:chat 5:misc" # $ws1..5 in the sway config
 IIYAMA_WORKSPACES="1:web 2:term 4:chat 5:misc" # dual only: AOC keeps only the game
-STATE="${XDG_RUNTIME_DIR:-/tmp}/monitor-layout" # shown in the bar (i3status read_file)
-PINS="$STATE.conf"                              # `include`d by the i3 config
+STATE="${XDG_RUNTIME_DIR:-/tmp}/monitor-layout" # shown in the bar (waybar custom/monitor, signalled below)
+PINS="$STATE.sway.conf"                         # `include`d by the sway config
 LOCK="$STATE.lock"                              # held while inputs are read
 IN_AOC="$STATE.aoc" IN_IIYAMA="$STATE.iiyama"   # probe results, consumed by the pick
 DP=x0f   # VCP 0x60 value for DisplayPort: the desktop (both monitors)
@@ -68,6 +71,8 @@ AWAY=x11 # HDMI on both: the macbook on the AOC, the guest on the iiyama
 # Outputs are found by the monitor's EDID model name, not by connector: the
 # DP-2/DP-3 assignment silently swapped once when the cables were redone
 # (2026-09-15). The EDID name descriptor is plain ASCII, grep -a finds it.
+# sway names its outputs after the DRM connector, so $AOC/$IIYAMA address
+# them directly.
 # The connector directory also holds the DP aux i2c adapter (i2c-N), which
 # is the DDC bus: addressing ddcutil by bus skips its scan of every bus
 # (~0.6s -> 0.1-0.4s). Not the connector's `ddc` link — that is the plain
@@ -137,7 +142,7 @@ set_input() {
 	ddcutil setvcp 60 "$2" --bus "$1" >/dev/null 2>&1
 }
 # switch AOC_VALUE IIYAMA_VALUE: both monitors at once, in the background
-# (the i3 work meanwhile; `wait` at the end)
+# (the sway work meanwhile; `wait` at the end)
 switch() {
 	ddc || return 0
 	set_input "$AOC_BUS" "$1" "$AOC_IN" &
@@ -145,26 +150,42 @@ switch() {
 }
 
 # --- outputs -----------------------------------------------------------------
-# iiyama above the AOC (diagonal in X). Idempotent: only modesets when the
-# geometry differs (i.e. coming from mirror), so game/dual/aoc switch without
-# blanking.
-# shellcheck disable=SC2086
+# iiyama above the AOC (diagonal). Idempotent: only sets modes when the
+# geometry differs (first run after login: the outputs come up at their
+# preferred 60Hz modes), so the layouts switch without blanking. Both
+# outputs in one command = one atomic commit.
 stacked() {
-	xrandr | grep -q "^$IIYAMA connected.* 2560x1440+0+0 " &&
-		xrandr | grep -q "^$AOC connected.* 2560x1440+$(echo "$AOC_POS" | tr x +) " && return 0
-	xrandr --output "$IIYAMA" $IIYAMA_MODE --pos 0x0 \
-		--output "$AOC" $AOC_MODE --pos "$AOC_POS"
+	swaymsg -t get_outputs | jq -e --arg a "$AOC" --arg i "$IIYAMA" --arg p "$AOC_POS" '
+		def at($n; $x; $y): any(.[]; .name == $n and .active and .rect.x == $x and .rect.y == $y);
+		at($i; 0; 0) and at($a; ($p | split("x")[0] | tonumber); ($p | split("x")[1] | tonumber))' >/dev/null && return 0
+	swaymsg "output $IIYAMA $IIYAMA_MODE position 0 0 enable, output $AOC $AOC_MODE position $(echo "$AOC_POS" | tr x ' ') enable" >/dev/null
 }
 
-# --- i3 ----------------------------------------------------------------------
-# workspaces that hold windows — the ones worth moving. i3 keeps one empty
+# primary OUTPUT: on Xwayland (see header). Its outputs are XWAYLAND<n>,
+# matched by geometry. Connecting starts the lazy Xwayland if it is not up.
+primary() {
+	geo=$(swaymsg -t get_outputs | jq -r --arg o "$1" '.[] | select(.name == $o) | .rect | "\(.width)x\(.height)+\(.x)+\(.y)"')
+	xw=$(xrandr --query 2>/dev/null | awk -v g=" $geo " '$2 == "connected" && index($0, g) { print $1; exit }')
+	[ -n "$xw" ] && xrandr --output "$xw" --primary
+	return 0
+}
+
+# mirror: the iiyama shows a fullscreen live copy of the AOC (wl-mirror,
+# modules/home/linux.nix). --fullscreen-output puts it fullscreen on that
+# output; sway moves the window there. Killed by every other layout, and
+# before a fresh one.
+unmirror() { pkill -x wl-mirror 2>/dev/null; return 0; }
+mirror_onto() { setsid -f wl-mirror --fullscreen-output "$1" "$2" >/dev/null 2>&1; }
+
+# --- sway --------------------------------------------------------------------
+# workspaces that hold windows — the ones worth moving. sway keeps one empty
 # placeholder per output on its own; those are parked instead (see park).
 ws_used() {
-	i3-msg -t get_tree | jq -r '.. | select(.type? == "workspace") | select(.name != "__i3_scratch")
+	swaymsg -t get_tree | jq -r '.. | select(.type? == "workspace") | select(.name != "__i3_scratch")
 		| select((.nodes | length) + (.floating_nodes | length) > 0) | .name'
 }
-ws_on() { i3-msg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o) | .name'; }
-ws_hidden_on() { i3-msg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o and (.visible | not)) | .name'; }
+ws_on() { swaymsg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o) | .name'; }
+ws_hidden_on() { swaymsg -t get_workspaces | jq -r --arg o "$1" '.[] | select(.output == $o and (.visible | not)) | .name'; }
 
 # place OUTPUT WS...: criteria-addressed, so the focused workspace is never
 # switched away first (workspace_auto_back_and_forth would bounce). The
@@ -173,57 +194,67 @@ place() {
 	out=$1
 	shift
 	for ws; do
-		i3-msg "[workspace=\"^$ws\$\"] move workspace to output $out" >/dev/null
+		swaymsg "[workspace=\"^$ws\$\"] move workspace to output $out" >/dev/null
 	done
 }
-ws_focused() { i3-msg -t get_workspaces | jq -r '.[] | select(.focused) | .name'; }
+ws_focused() { swaymsg -t get_workspaces | jq -r '.[] | select(.focused) | .name'; }
 cur=$(ws_focused)
-refocus() { [ "$(ws_focused)" = "$cur" ] || i3-msg "workspace $cur" >/dev/null; }
+refocus() { [ "$(ws_focused)" = "$cur" ] || swaymsg "workspace $cur" >/dev/null; }
 
 # The dark output's placeholder gets the lowest free number from the config
 # bindings (e.g. "3:game"), so $mod+3 would land on the dark monitor: it is
-# visible there, so i3 never drops it and the pin (new workspaces only) does
-# not help. Leave "dark" as the output's only workspace; $mod+N then creates
-# the real one on its pinned (visible) output.
+# visible there, so sway never drops it and the pin (new workspaces only)
+# does not help. Leave "dark" as the output's only workspace; $mod+N then
+# creates the real one on its pinned (visible) output.
 # Not by renaming the placeholder: that fails once a "dark" exists (hidden
 # behind it, or on the other output after aoc <-> game) and the numbered name
 # stays. Walk the output instead: everything left on it is empty (place ran),
-# and i3 drops an empty workspace when it is left. Dark first (drops the
+# and sway drops an empty workspace when it is left. Dark first (drops the
 # visible one), then each hidden one with dark right after it: a hidden empty
 # workspace lives until it is shown, so it still exists when its turn comes.
 # Never name one that may be gone already -- `workspace N` on a name that no
 # longer exists creates it, on its pinned output, and the focus (and dark)
-# goes with it. That is how boot left 1:web on the dark AOC: i3 had folded
-# the vanished output's workspaces onto it, two empties, and visiting the
+# goes with it. That is how boot left 1:web on the dark AOC: the vanished
+# output's workspaces had been folded onto it, two empties, and visiting the
 # first one dropped the visible second before its turn (2026-09-28).
 # A dark on the other output would be focused instead of created here:
 # rename it out of the way, sweep drops it once $cur covers it (after
 # refocus).
 park() {
-	ws_on "$1" | grep -qx dark || i3-msg 'rename workspace dark to undark' >/dev/null 2>&1
+	ws_on "$1" | grep -qx dark || swaymsg 'rename workspace dark to undark' >/dev/null 2>&1
 	cmd="focus output $1; workspace --no-auto-back-and-forth dark"
 	for ws in $(ws_hidden_on "$1"); do
 		[ "$ws" = dark ] || cmd="$cmd; workspace --no-auto-back-and-forth \"$ws\"; workspace --no-auto-back-and-forth dark"
 	done
-	i3-msg "$cmd" >/dev/null
+	swaymsg "$cmd" >/dev/null
 }
 sweep() {
-	i3-msg -t get_workspaces | jq -e 'any(.name == "undark")' >/dev/null &&
-		i3-msg "workspace --no-auto-back-and-forth undark; workspace --no-auto-back-and-forth $cur" >/dev/null
+	swaymsg -t get_workspaces | jq -e 'any(.name == "undark")' >/dev/null &&
+		swaymsg "workspace --no-auto-back-and-forth undark; workspace --no-auto-back-and-forth $cur" >/dev/null
 }
 
 # dual has no dark output: a leftover "dark" next to a real workspace stays
-# until visited — i3 drops an empty workspace the moment it is left
+# until visited — sway drops an empty workspace the moment it is left
 unpark() {
-	i3-msg -t get_workspaces | jq -e 'any(.name == "dark")' >/dev/null &&
-		i3-msg "workspace dark; workspace $cur" >/dev/null
+	swaymsg -t get_workspaces | jq -e 'any(.name == "dark")' >/dev/null &&
+		swaymsg "workspace dark; workspace $cur" >/dev/null
 }
 
 # pin OUTPUT WS...: workspace -> output for workspaces that do not exist yet.
-# Appends; `pins` truncates first and `reload` makes i3 read the snippet
-# (no restart: windows and layouts stay). i3 ignores a pin whose output is
-# gone (mirror: the clone folds into one output), so pins are never fatal.
-pins() { : >"$PINS"; }
+# Appends; `pins` truncates first and `reload` makes sway read the snippet
+# (no restart: windows and layouts stay). A pin whose output is gone is
+# ignored, so pins are never fatal.
+# The snippet starts with the output lines: a reload re-applies output
+# config from the config FILES and resets whatever was set over IPC only
+# (stacked's command) to preferred mode, no adaptive sync, auto position.
+# Also read at the next login in the same boot: the outputs are right before
+# the script even runs.
+pins() {
+	{
+		echo "output $IIYAMA $IIYAMA_MODE position 0 0"
+		echo "output $AOC $AOC_MODE position $(echo "$AOC_POS" | tr x ' ')"
+	} >"$PINS"
+}
 pin() {
 	out=$1
 	shift
@@ -231,11 +262,11 @@ pin() {
 		echo "workspace \"$ws\" output $out" >>"$PINS"
 	done
 }
-reload() { i3-msg reload >/dev/null; }
+reload() { swaymsg reload >/dev/null; }
 
-# i3 warps the pointer when focus changes output (mouse_warping output):
+# sway warps the pointer when focus changes output (mouse_warping output):
 # bounce over to the dark one and back -> cursor lands in the focused window
-warp() { i3-msg "focus output $1; focus output $2" >/dev/null; }
+warp() { swaymsg "focus output $1; focus output $2" >/dev/null; }
 
 # --- layouts -----------------------------------------------------------------
 case ${1:-} in
@@ -261,17 +292,29 @@ auto)
 	exec "$0" "$layout"
 	;;
 mirror)
+	# everything on the AOC, the iiyama parked dark and then covered by the
+	# mirror window
+	unmirror
+	stacked
+	primary "$AOC"
+	pins
 	# shellcheck disable=SC2086
-	xrandr --output "$AOC" --primary $AOC_MODE --pos 0x0 \
-		--output "$IIYAMA" $IIYAMA_MODE --same-as "$AOC"
-	pins # none: one output either way; drops the previous layout's pins
+	pin "$AOC" $WORKSPACES
 	reload
+	# shellcheck disable=SC2046
+	place "$AOC" $(ws_used)
+	park "$IIYAMA"
+	refocus
+	sweep
+	mirror_onto "$IIYAMA" "$AOC"
+	warp "$IIYAMA" "$AOC"
 	;;
 game)
 	inputs
 	switch "$AWAY" "$DP"
+	unmirror
 	stacked
-	xrandr --output "$IIYAMA" --primary
+	primary "$IIYAMA"
 	pins
 	# shellcheck disable=SC2086
 	pin "$IIYAMA" $WORKSPACES
@@ -286,8 +329,9 @@ game)
 aoc)
 	inputs
 	switch "$DP" "$AWAY"
+	unmirror
 	stacked
-	xrandr --output "$AOC" --primary
+	primary "$AOC"
 	pins
 	# shellcheck disable=SC2086
 	pin "$AOC" $WORKSPACES
@@ -313,8 +357,9 @@ speaker)
 dual)
 	inputs
 	switch "$DP" "$DP"
+	unmirror
 	stacked
-	xrandr --output "$AOC" --primary
+	primary "$AOC"
 	pins
 	# shellcheck disable=SC2046,SC2086
 	pin "$AOC" $(printf '%s\n' $WORKSPACES | grep -vxF "$(printf '%s\n' $IIYAMA_WORKSPACES)")
@@ -332,7 +377,7 @@ dual)
 cursor)
 	case $(cat "$STATE" 2>/dev/null) in
 	game) warp "$AOC" "$IIYAMA" ;;
-	dual | aoc) warp "$IIYAMA" "$AOC" ;;
+	dual | aoc | mirror) warp "$IIYAMA" "$AOC" ;;
 	esac
 	exit 0
 	;;
@@ -342,4 +387,5 @@ cursor)
 	;;
 esac
 echo "$1" >"$STATE"
+pkill -RTMIN+8 waybar 2>/dev/null # the bar re-reads $STATE (custom/monitor signal). No -x: nix wraps it, comm is .waybar-wrapped
 wait # input switches still in flight

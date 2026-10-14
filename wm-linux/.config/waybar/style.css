@@ -1,0 +1,87 @@
+/* everforest dark-medium, the set of the sway config: bg #2d353b, bg1
+ * #343f44, bg3 #475258, fg #d3c6aa, grey #859289, green #a7c080, red
+ * #e67e80, yellow #dbbc7f. Workspaces: focused green with bg text,
+ * visible-on-another-output bg3, the rest bg with grey text, urgent red.
+ * Status fields fg with a dimmed icon (pango span in the format), the clock
+ * bold as the anchor of the right end. */
+* {
+  font-family: "FiraCode Nerd Font";
+  font-size: 11pt;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+}
+
+window#waybar {
+  background: #2d353b;
+  color: #d3c6aa;
+}
+
+#workspaces button {
+  padding: 0 10px;
+  color: #859289;
+  background: #2d353b;
+}
+#workspaces button.visible {
+  color: #d3c6aa;
+  background: #475258;
+}
+#workspaces button.focused {
+  color: #2d353b;
+  background: #a7c080;
+}
+#workspaces button.urgent {
+  color: #2d353b;
+  background: #e67e80;
+}
+#workspaces button:hover {
+  box-shadow: none;
+  text-shadow: none;
+  color: #d3c6aa;
+  background: #343f44;
+}
+
+/* binding mode: dark red, white (swaybar's default) */
+#mode {
+  padding: 0 10px;
+  color: #ffffff;
+  background: #900000;
+}
+
+/* status fields */
+#network,
+#disk,
+#cpu,
+#memory,
+#custom-monitor,
+#wireplumber,
+#clock {
+  padding: 0 10px;
+  color: #d3c6aa;
+}
+#clock {
+  font-weight: bold;
+}
+
+#network.disconnected,
+#cpu.critical,
+#memory.warning {
+  color: #e67e80;
+}
+#cpu.warning,
+#disk.warning,
+#wireplumber.muted {
+  color: #dbbc7f;
+}
+
+#tray {
+  padding: 0 8px 0 4px;
+}
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+}

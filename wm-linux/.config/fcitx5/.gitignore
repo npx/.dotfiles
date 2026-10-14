@@ -1,2 +1,4 @@
-# fcitx5 runtime/addon files (dir is stow-linked into ~/.config)
-conf/
+# fcitx5 runtime/addon files (dir is stow-linked into ~/.config); only the
+# addon config files we set ourselves are tracked
+conf/*
+!conf/classicui.conf
