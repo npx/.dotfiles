@@ -22,5 +22,6 @@ in
     ripgrep
     jq
     watch
+    btop
   ];
 }
