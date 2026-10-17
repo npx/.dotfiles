@@ -75,7 +75,7 @@
     "tooltip": false
   },
   // pipewire's default sink ("All outputs" combine sink = master volume);
-  // scrolling steps it like the media keys, click opens the mixer (ws5)
+  // scrolling steps it like the media keys, click opens the mixer (its own workspace "audio")
   "wireplumber": {
     "format": "<span color='#859289' size='115%' rise='-1pt'>󰕾</span> {volume}%",
     "format-muted": "<span color='#859289' size='115%' rise='-1pt'>󰖁</span> muted",

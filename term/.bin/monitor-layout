@@ -59,8 +59,8 @@
 AOC_MODE="mode 2560x1440@180Hz adaptive_sync on"
 AOC_POS=2560x1440 # stacked: diagonal to the iiyama (0x0), see above
 IIYAMA_MODE="mode 2560x1440@143.86Hz adaptive_sync on" # it defaults to 60Hz
-WORKSPACES="1:web 2:term 3:game 4:chat 5:misc" # $ws1..5 in the sway config
-IIYAMA_WORKSPACES="1:web 2:term 4:chat 5:misc" # dual only: AOC keeps only the game
+WORKSPACES="1:web 2:term 3:game 4:chat audio" # $ws1..4 + pavucontrol's temporary workspace (sway config)
+IIYAMA_WORKSPACES="1:web 2:term 4:chat audio" # dual only: AOC keeps only the game
 STATE="${XDG_RUNTIME_DIR:-/tmp}/monitor-layout" # shown in the bar (waybar custom/monitor, signalled below)
 PINS="$STATE.sway.conf"                         # `include`d by the sway config
 LOCK="$STATE.lock"                              # held while inputs are read

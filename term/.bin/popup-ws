@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# popup-ws WORKSPACE APP_ID_REGEX — run from a sway for_window rule, makes
+# the app's (key-less) workspace temporary: leaving the workspace kills the
+# app, closing the app returns to the previous workspace. Any way out
+# counts — keys, a waybar click, focusing a window on the other monitor all
+# change the focused workspace. Lives only while the app does: jq stops at
+# the first matching event and the subscriber is killed by pid (a broken
+# pipe is not enough: the kill's own close event lands before the pipe is
+# gone). One instance per window (single-instance apps map once); a sway
+# reload does not touch it.
+#   for_window [app_id="(?i)pavucontrol$"] focus, exec ~/.bin/popup-ws audio 'pavucontrol$'
+ws=$1 app=$2
+coproc SUB { exec swaymsg -t subscribe -m '["workspace","window"]'; }
+exec 3<&"${SUB[0]}" # coproc fds are not visible in the $(...) subshell; a dup is
+ev=$(jq -n -r --arg ws "$ws" --arg app "$app" 'first(inputs
+	| if .change == "focus" and .old.name? == $ws then "left"
+	  elif .change == "close" and (.container.app_id // "" | test($app; "i")) then "closed"
+	  else empty end)' <&3)
+kill "$SUB_PID" 2>/dev/null
+case $ev in
+left) swaymsg "[app_id=(?i)$app] kill" ;;
+closed) swaymsg workspace back_and_forth ;;
+esac
