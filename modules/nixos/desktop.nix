@@ -236,6 +236,28 @@ in
     alsa.enable = true;
     pulse.enable = true;
     # alsa.support32Bit lives in gaming.nix — i686, x86_64-only
+
+    # Steam Remote Play (Steam Link): Steam loads its own "steam-streaming-playback"
+    # sink, makes it the default (games play there) and reads the default back
+    # 0.3ms later — before wireplumber switched — so it records the OLD default's
+    # monitor (headset or DP audio): audible at the desk, silent on the client.
+    # Pin the monitor capture to Steam's sink; other Steam captures (mic) untouched.
+    # Needs: systemctl --user restart pipewire-pulse (kills Steam's audio streams —
+    # between sessions). Live fix for a running stream:
+    #   pw-metadata $(wpctl status | grep -oP '\d+(?=\. Steam\s*$)') target.object steam-streaming-playback
+    extraConfig.pipewire-pulse."60-steam-streaming-capture" = {
+      "stream.rules" = [
+        {
+          matches = [
+            {
+              "application.process.binary" = "steam";
+              "stream.capture.sink" = "true";
+            }
+          ];
+          actions.update-props."target.object" = "steam-streaming-playback";
+        }
+      ];
+    };
   };
 
   # xrandr: monitor-layout sets Xwayland's primary output (games fullscreen there)
