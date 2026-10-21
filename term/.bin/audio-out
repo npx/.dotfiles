@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# audio-out [toggle|headset|speakers|status|watch] — the desktop's sound output.
+# Two outputs are ever in use: the PRO X headset (USB dongle, always present
+# whether the headset is on or not, so wireplumber cannot pick for us) and
+# the GPU's DP audio, i.e. the speakers of whatever monitor sits on DP (the
+# iiyama in the game/dual layouts, the speakerless AOC in aoc). The onboard
+# IEC958 has nothing wired to it.
+#
+# Switching sets pipewire's default sink; streams that were never pinned to
+# a device (pavucontrol) follow it, as do the media keys.
+# status prints the state as waybar JSON: text = a nerd-font icon
+# (headphones, or a speaker for anything else) and the volume in percent,
+# pango-marked up for the bar (icon grey, level struck out while muted),
+# class = "muted" or empty. watch prints it now and then once per change
+# until pipewire goes away: then a last line with class "gone" and a clean
+# exit. bash for read -t and signal-interruptible reads (see watch).
+HEADSET='^alsa_output\.usb-Logitech_PRO_X'
+SPEAKERS='^alsa_output\.pci-.*\.hdmi-'
+
+current() { wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | sed -n 's/.*node\.name = "\(.*\)"/\1/p'; }
+matches() { printf '%s' "$1" | grep -qE "$2"; }
+sink_id() { # id of the first sink whose node.name matches $1
+	pw-dump | jq -r --arg re "$1" 'first(.[]
+		| select(.info.props["media.class"]? == "Audio/Sink"
+			and (.info.props["node.name"] | test($re)))
+		| .id)'
+}
+use() {
+	id=$(sink_id "$2")
+	[ -n "$id" ] || { echo "audio-out: no $1 sink" >&2; exit 1; }
+	wpctl set-default "$id"
+	# tell the bar's watchers (see watch): a switch is no event to them.
+	# wireplumber applies the new default a moment after the request. The
+	# pattern is the watchers' exact command line: USR1 ends any other match.
+	sleep 0.3
+	pkill -USR1 -f '^bash [^ ]*/audio-out watch$' 2>/dev/null || :
+}
+status() {
+	# "Volume: 0.55 [MUTED]": level and mute in one call
+	set -- $(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
+	level=$(awk -v v="${2:-0}" 'BEGIN { printf "%3d%%", v * 100 + 0.5 }')
+	case ${3:-} in *MUTED*) muted=1 ;; *) muted= ;; esac
+	if matches "$(current)" "$HEADSET"; then icon=${muted:+󰟎}; icon=${icon:-󰋋}
+	else icon=${muted:+󰖁}; icon=${icon:-󰕾}; fi
+	# the icon bigger and lowered onto the baseline, grey unless muted (then
+	# the label's class colours both red) and the level struck out. A
+	# fixed-width level keeps the field still; the headphones glyph is wider
+	# than its advance, hence two spaces.
+	if [ -n "$muted" ]; then colour=; level="<s>$level</s>"; else colour="color='#859289' "; fi
+	printf '{"text":"<span %ssize='"'"'115%%'"'"' rise='"'"'-1pt'"'"'>%s</span>  %s","class":"%s"}\n' \
+		"$colour" "$icon" "$level" "${muted:+muted}"
+}
+
+case ${1:-toggle} in
+status) status ;;
+watch)
+	# Driven by pipewire's node events (pw-dump -m prints every object that
+	# changes: a volume or mute is a node param, streams move to a new
+	# output, a device appears). Clients are ignored: each wpctl call, status
+	# included, is one, and the loop would feed itself. What no listener gets
+	# is the default sink itself: pipewire 1.6.5 delivers metadata only on
+	# connect, never its later changes (pw-metadata -m, pw-dump -m, pw-cli -m
+	# all stay silent on a switch), so a switch while nothing plays makes no
+	# event at all. Hence the read timeout as a fallback check, and use()
+	# nudging the watchers with USR1 for an instant icon: the trap prints
+	# the status at once while the read blocks on (bash runs the handler and
+	# resumes the read).
+	# All of it runs in this script's process group (waybar starts it as the
+	# leader) and the group goes down with this shell: waybar leaves SIGPIPE
+	# ignored, so with the bar gone the loop would otherwise run on with
+	# failing writes, one more pw-dump for every bar restart.
+	trap 'trap - TERM; kill -- -$$ 2>/dev/null' EXIT TERM INT HUP
+	trap ':' USR1
+	{
+		trap ':' USR1
+		status
+		pw-dump -m 2>/dev/null | {
+			trap status USR1
+			while :; do
+				if read -r -t 5 line; then
+					case $line in
+					*'"type": "PipeWire:Interface:Node"'*) status ;;
+					esac
+				else
+					[ $? -gt 128 ] || break # EOF: pipewire is gone
+					status
+				fi
+			done
+		}
+		printf '{"text":"<span size='"'"'115%%'"'"' rise='"'"'-1pt'"'"'>󰝟</span>  gone","class":"gone"}\n'
+	} | awk '$0 != last { print; fflush(); last = $0 }' &
+	pid=$!
+	# wait returns early when USR1 arrives; only the pipeline's end counts
+	while :; do
+		wait "$pid"
+		rc=$?
+		[ "$rc" -gt 128 ] && kill -0 "$pid" 2>/dev/null || break
+	done
+	;;
+headset) use headset "$HEADSET" ;;
+speakers) use speakers "$SPEAKERS" ;;
+toggle)
+	if matches "$(current)" "$HEADSET"; then use speakers "$SPEAKERS"; else use headset "$HEADSET"; fi
+	;;
+*)
+	echo "usage: audio-out [toggle|headset|speakers|status|watch]" >&2
+	exit 2
+	;;
+esac

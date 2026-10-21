@@ -18,7 +18,7 @@
     "cpu",
     "memory",
     "custom/monitor",
-    "wireplumber",
+    "custom/audio",
     "clock",
     "tray"
   ],
@@ -44,7 +44,9 @@
     "format-disconnected": "󰈂 down",
     "tooltip": false
   },
-  // icons dimmed grey (pango markup; a warning class colours the value only)
+  // icons dimmed grey (pango markup; a warning class colours the value only).
+  // Numbers are padded to a fixed width (fmt specs, monospace font) so the
+  // fields do not shift as values change.
   // `warning` at 90% used (yellow, style.css)
   "disk": {
     "path": "/",
@@ -53,13 +55,13 @@
     "interval": 30
   },
   "cpu": {
-    "format": "<span color='#859289' size='115%' rise='-1pt'>󰻠</span> {usage}%",
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰻠</span> {usage:>2}%",
     "states": { "warning": 70, "critical": 90 },
     "interval": 5
   },
   // `warning` below 10% free (red, style.css)
   "memory": {
-    "format": "<span color='#859289' size='115%' rise='-1pt'>󰍛</span> {used:0.1f}/{total:0.0f}G",
+    "format": "<span color='#859289' size='115%' rise='-1pt'>󰍛</span> {used:4.1f}/{total:0.0f}G",
     "states": { "warning": 90 },
     "interval": 5
   },
@@ -74,14 +76,30 @@
     "signal": 8,
     "tooltip": false
   },
-  // pipewire's default sink ("All outputs" combine sink = master volume);
-  // scrolling steps it like the media keys, click opens the mixer (its own workspace "audio")
-  "wireplumber": {
-    "format": "<span color='#859289' size='115%' rise='-1pt'>󰕾</span> {volume}%",
-    "format-muted": "<span color='#859289' size='115%' rise='-1pt'>󰖁</span> muted",
-    "max-volume": 100,
-    "scroll-step": 5,
-    "on-click": "pavucontrol",
+  // the output in use and its volume: headphones or a speaker for the DP
+  // monitor's, the level in percent; both red and the level struck out while
+  // muted (class muted, style.css). ~/.bin/audio-out watch keeps running and
+  // prints a line per change: pipewire's node events (volume, mute, streams
+  // moving, devices appearing) at once, output switches by audio-out's own
+  // nudge, anything else (pavucontrol picking an output while nothing
+  // plays: pipewire 1.6 tells no listener about that) within 5s. Not
+  // waybar's own volume modules: wireplumber binds to the default sink's
+  // node id once and never follows a sink created later (at login the USB
+  // headset's sink appears after the bar: 0% all session), pulseaudio keeps
+  // the previous output's volume after a switch and ignores the keys from
+  // then on. When pipewire goes away (restarted after a config change) the
+  // watcher prints a red "gone" and exits; the click then reloads sway,
+  // which restarts the bar. Otherwise the click flips the output; right
+  // click opens the mixer (its own workspace "audio"), scrolling steps the
+  // level like the media keys.
+  "custom/audio": {
+    "exec": "~/.bin/audio-out watch",
+    "return-type": "json",
+    "format": "{}",
+    "on-click": "pgrep -f '[a]udio-out watch' >/dev/null && ~/.bin/audio-out || swaymsg reload",
+    "on-click-right": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
     "tooltip": false
   },
   "clock": {
