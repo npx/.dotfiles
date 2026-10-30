@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # audio-out [toggle|headset|speakers|status|watch] — the desktop's sound output.
 # Two outputs are ever in use: the PRO X headset (USB dongle, always present
 # whether the headset is on or not, so wireplumber cannot pick for us) and
@@ -13,7 +13,7 @@
 # pango-marked up for the bar (icon grey, level struck out while muted),
 # class = "muted" or empty. watch prints it now and then once per change
 # until pipewire goes away: then a last line with class "gone" and a clean
-# exit. bash for read -t and signal-interruptible reads (see watch).
+# exit.
 HEADSET='^alsa_output\.usb-Logitech_PRO_X'
 SPEAKERS='^alsa_output\.pci-.*\.hdmi-'
 
@@ -29,11 +29,6 @@ use() {
 	id=$(sink_id "$2")
 	[ -n "$id" ] || { echo "audio-out: no $1 sink" >&2; exit 1; }
 	wpctl set-default "$id"
-	# tell the bar's watchers (see watch): a switch is no event to them.
-	# wireplumber applies the new default a moment after the request. The
-	# pattern is the watchers' exact command line: USR1 ends any other match.
-	sleep 0.3
-	pkill -USR1 -f '^bash [^ ]*/audio-out watch$' 2>/dev/null || :
 }
 status() {
 	# "Volume: 0.55 [MUTED]": level and mute in one call
@@ -54,48 +49,30 @@ status() {
 case ${1:-toggle} in
 status) status ;;
 watch)
-	# Driven by pipewire's node events (pw-dump -m prints every object that
-	# changes: a volume or mute is a node param, streams move to a new
-	# output, a device appears). Clients are ignored: each wpctl call, status
-	# included, is one, and the loop would feed itself. What no listener gets
-	# is the default sink itself: pipewire 1.6.5 delivers metadata only on
-	# connect, never its later changes (pw-metadata -m, pw-dump -m, pw-cli -m
-	# all stay silent on a switch), so a switch while nothing plays makes no
-	# event at all. Hence the read timeout as a fallback check, and use()
-	# nudging the watchers with USR1 for an instant icon: the trap prints
-	# the status at once while the read blocks on (bash runs the handler and
-	# resumes the read).
+	# Driven by pipewire's events: pw-dump -m prints every object that
+	# changes. Nodes cover volume and mute (node params), streams moving to
+	# another output and devices appearing; the default-sink metadata key
+	# covers the switch itself, whoever makes it (this script, pavucontrol),
+	# even while nothing plays. Clients are ignored: each wpctl call, status
+	# included, is one, and the loop would feed itself.
 	# All of it runs in this script's process group (waybar starts it as the
-	# leader) and the group goes down with this shell: waybar leaves SIGPIPE
-	# ignored, so with the bar gone the loop would otherwise run on with
-	# failing writes, one more pw-dump for every bar restart.
+	# leader) and the group goes down as a whole: waybar leaves SIGPIPE
+	# ignored, so with the bar gone status would otherwise fail to write
+	# forever and pw-dump, which shrugs off the broken pipe, would stay with
+	# it, one more for every bar restart. Hence the loop kills the group on
+	# a failed write, and the trap does when waybar terminates this shell.
 	trap 'trap - TERM; kill -- -$$ 2>/dev/null' EXIT TERM INT HUP
-	trap ':' USR1
 	{
-		trap ':' USR1
 		status
-		pw-dump -m 2>/dev/null | {
-			trap status USR1
-			while :; do
-				if read -r -t 5 line; then
-					case $line in
-					*'"type": "PipeWire:Interface:Node"'*) status ;;
-					esac
-				else
-					[ $? -gt 128 ] || break # EOF: pipewire is gone
-					status
-				fi
-			done
-		}
+		pw-dump -m 2>/dev/null | while read -r line; do
+			case $line in
+			*'"type": "PipeWire:Interface:Node"'* | *'"key": "default.audio.sink"'*)
+				status || kill -- -$$ 2>/dev/null || break
+				;;
+			esac
+		done
 		printf '{"text":"<span size='"'"'115%%'"'"' rise='"'"'-1pt'"'"'>󰝟</span>  gone","class":"gone"}\n'
-	} | awk '$0 != last { print; fflush(); last = $0 }' &
-	pid=$!
-	# wait returns early when USR1 arrives; only the pipeline's end counts
-	while :; do
-		wait "$pid"
-		rc=$?
-		[ "$rc" -gt 128 ] && kill -0 "$pid" 2>/dev/null || break
-	done
+	} | awk '$0 != last { print; fflush(); last = $0 }'
 	;;
 headset) use headset "$HEADSET" ;;
 speakers) use speakers "$SPEAKERS" ;;

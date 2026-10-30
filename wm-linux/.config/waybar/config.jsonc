@@ -79,11 +79,9 @@
   // the output in use and its volume: headphones or a speaker for the DP
   // monitor's, the level in percent; both red and the level struck out while
   // muted (class muted, style.css). ~/.bin/audio-out watch keeps running and
-  // prints a line per change: pipewire's node events (volume, mute, streams
-  // moving, devices appearing) at once, output switches by audio-out's own
-  // nudge, anything else (pavucontrol picking an output while nothing
-  // plays: pipewire 1.6 tells no listener about that) within 5s. Not
-  // waybar's own volume modules: wireplumber binds to the default sink's
+  // prints a line per pipewire event: volume, mute, streams moving, devices
+  // appearing, the default output changing (the key or pavucontrol alike).
+  // Not waybar's own volume modules: wireplumber binds to the default sink's
   // node id once and never follows a sink created later (at login the USB
   // headset's sink appears after the bar: 0% all session), pulseaudio keeps
   // the previous output's volume after a switch and ignores the keys from
