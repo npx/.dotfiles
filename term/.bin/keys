@@ -1,9 +1,9 @@
 #!/bin/sh
-# keys — one-screen cheat sheet for the desktop (i3 + keyd): six small
+# keys — one-screen cheat sheet for the desktop (sway + keyd): six small
 # key/action tables, two per band, 80 columns wide. Hand-written on purpose:
 # a parser cannot know that hjkl needs no explaining. Keep in step with
-# wm-linux/.config/i3/config and the keyd block in modules/nixos/desktop.nix.
-# Colors: everforest (same as the i3 bar); off when piped.
+# wm-linux/.config/sway/config and the keyd block in modules/nixos/desktop.nix.
+# Colors: everforest (same as the bar); off when piped.
 if [ -t 1 ]; then
   Y=$(printf '\033[1;38;2;219;188;127m') # title       — yellow, bold
   K=$(printf '\033[1;38;2;167;192;128m') # key         — green, bold
@@ -34,8 +34,8 @@ printf "    ${D}%-35s${R}    ${D}%s${R}\n" \
     "Steam games: plain Space, mod = Win"        "→ ~/Pictures/screenshots + clipboard"
 printf '\n'
 hdr "Windows" "Layout"
-row "mod+Return"         "xterm"              "mod+b"        "split horizontal"
-row "mod+d"              "dmenu"              "mod+v"        "split vertical"
+row "mod+Return"         "foot"               "mod+b"        "split horizontal"
+row "mod+d"              "launcher"           "mod+v"        "split vertical"
 row "mod+Shift+q"        "kill window"        "mod+s"        "layout stacking"
 row "mod+h/j/k/l"        "focus"              "mod+w"        "layout tabbed"
 row "mod+Shift+h/j/k/l"  "move window"        "mod+e"        "layout toggle split"
@@ -45,10 +45,16 @@ row "mod+Shift+space"    "floating toggle"    "mod+drag"     "move, right-drag r
 row "mod+a / +Shift+a"   "focus parent/child" ""             "new window lands beside group"
 printf '\n'
 hdr "Workspaces" "System"
-row "mod+1..5"           "go to workspace"    "mod+Shift+s"  "suspend"
-row "mod+Shift+1..5"     "move window there"  "mod+Shift+c"  "i3 reload"
-note "1:web 2:term 3:game 4:chat 5:misc"      "mod+Shift+r"  "i3 restart"
-note "same key again goes back"               "mod+Shift+e"  "i3 exit"
+row "mod+1..4"           "go to workspace"    "mod+Shift+s"  "suspend"
+row "mod+Shift+1..4"     "move window there"  "mod+Shift+c"  "sway reload"
+note "1:web 2:term 3:game 4:chat"             "mod+Shift+r"  "sway reload (no restart)"
+note "same key again goes back"               "mod+Shift+e"  "sway exit"
+row "mod+3/4"            "steam/discord"      "mod+Mute"     "headset <-> speakers"
+note "go there + start it if not open"        ""             "bar: click the output icon"
+note "pavucontrol: popup ws 'audio', leaving" ""             ""
+note "it closes pavu, closing pavu goes back" ""             ""
+row "mod+Tab"            "back and forth"     ""             ""
+note "apps open on + switch to their ws"      ""             ""
 row ""                   ""                   "mod+Shift+m"  "monitor menu (Esc leaves):"
 row ""                   ""                   ""             "[m]irror [g]ame [d]ual"
 row ""                   ""                   ""             "[a]oc [s]peaker [c]ursor"

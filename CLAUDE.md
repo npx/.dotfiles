@@ -88,7 +88,7 @@ Key Neovim features:
 6. `6-vm`: Virtual machines
 7. `7-private`: Personal apps (Discord auto-assigned)
 
-The NixOS gaming desktop deliberately does NOT mirror this: its i3 config (`wm-linux/.config/i3/config`) has its own 5-workspace scheme (`1:web 2:term 3:game 4:chat 5:misc`) with Everforest theming.
+The NixOS gaming desktop deliberately does NOT mirror this: its sway config (`wm-linux/.config/sway/config`) has its own 4-workspace scheme (`1:web 2:term 3:game 4:chat`, plus a temporary `audio` workspace that exists while pavucontrol runs; assigned apps switch to their workspace on open) with Everforest theming, waybar as the bar (`wm-linux/.config/waybar`) and `term/.bin/monitor-layout` for the two-monitor layouts. No X session: Steam, Chrome and Discord are X clients under Xwayland.
 
 ## Package Management
 

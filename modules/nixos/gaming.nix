@@ -9,9 +9,6 @@
     localNetworkGameTransfers.openFirewall = true;
     protontricks.enable = true;
     extraCompatPackages = [ pkgs.proton-ge-bin ];
-    # SteamOS-like Big Picture session; registers steam.desktop in
-    # wayland-sessions via sessionPackages -> tuigreet lists it
-    gamescopeSession.enable = true;
   };
 
   programs.gamemode.enable = true;
@@ -19,6 +16,8 @@
   # gamemode in 2022 -> `gamemoderun %command%` per game
   users.users.${user}.extraGroups = [ "gamemode" ];
 
+  # per game only (`gamescope -- %command%`): forced resolution, FSR, frame
+  # cap, or a game that fights the tiling compositor. No login session.
   programs.gamescope.enable = true;
   # NOT set (revisit if ever needed):
   #   enableWsi — HDR WSI layer, pulls i686 pkgs

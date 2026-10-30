@@ -93,3 +93,6 @@ alias ducks='du -cks -- * | sort -rn | head'
 
 # marp
 alias slides="marp -p -s --allow-local-files ${SLIDES}"
+
+# processes
+alias btop='btop --tty'
