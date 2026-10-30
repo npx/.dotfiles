@@ -1,7 +1,7 @@
 # Dev profile — mac always; gaming host adds/removes this import at will.
 { config, lib, pkgs, ... }:
 {
-  home.file = import ./lib/stow.nix { inherit config lib; } [
+  home.file = (import ./lib/stow.nix { inherit config lib; }).link [
     "nvim"
   ];
 

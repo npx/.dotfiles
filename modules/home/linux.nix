@@ -1,8 +1,10 @@
 # Home bits that only make sense on Linux (linux WM dotfiles, clipboard
 # tools). Mirror of modules/home/darwin.nix.
+# wm-linux/.bin holds scripts that must NOT reach the work macbook
+# (claude-remote: phone access to the projects on this machine only).
 { config, lib, pkgs, ... }:
 {
-  home.file = import ./lib/stow.nix { inherit config lib; } [
+  home.file = (import ./lib/stow.nix { inherit config lib; }).link [
     "wm-linux"
   ];
 

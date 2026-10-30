@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# Remote Control servers for every project under $PROJECTS, before leaving
+# the house: one `claude remote-control` per folder, each in its own window
+# of a detached tmux session, so they outlive this terminal and can be
+# looked at (attach) or stopped (down). The Claude mobile app then lists
+# the folders and starts sessions in them on demand. Deliberately no
+# daemon: a reboot takes the servers with it, and the next `up` runs
+# whatever claude is current (the CLI self-updates).
+#
+#   claude-remote        status: the servers running (one window each)
+#   claude-remote up     start a server for each project that has none yet
+#                        (--spawn same-dir, given so it is not asked for)
+#   claude-remote attach look at the servers (prefix-d to leave them running)
+#   claude-remote down   stop every server
+#
+# A server in a folder claude has not been trusted yet stalls on the trust
+# prompt, so those are skipped with a hint — run `claude` there once.
+# A session that is already open locally is a different thing: register it
+# with /remote-control from inside it, it keeps its context that way.
+SESSION=remote-control
+CLAUDE=$(command -v claude) || {
+	echo "claude-remote: claude not in PATH" >&2
+	exit 1
+}
+
+trusted() {
+	jq -e --arg p "$1" '.projects[$p].hasTrustDialogAccepted == true' \
+		"$HOME/.claude.json" >/dev/null 2>&1
+}
+
+up() {
+	[ -d "${PROJECTS:-}" ] || {
+		echo "claude-remote: \$PROJECTS is not a directory" >&2
+		exit 1
+	}
+	if tmux has-session -t "=$SESSION" 2>/dev/null; then
+		have=$(tmux list-windows -t "=$SESSION" -F '#W')
+	else
+		have=''
+	fi
+	while IFS= read -r dir; do
+		name=$(basename "$dir")
+		if grep -qxF "$name" <<<"$have"; then
+			echo "running  $name"
+			continue
+		fi
+		if ! trusted "$dir"; then
+			echo "skipped  $name (not trusted: run claude there once)"
+			continue
+		fi
+		if tmux has-session -t "=$SESSION" 2>/dev/null; then
+			win=$(tmux new-window -d -P -F '#{window_id}' -t "=$SESSION" -n "$name" -c "$dir" \
+				"$CLAUDE" remote-control --spawn same-dir --name "$name")
+		else
+			win=$(tmux new-session -d -P -F '#{window_id}' -s "$SESSION" -n "$name" -c "$dir" \
+				"$CLAUDE" remote-control --spawn same-dir --name "$name")
+		fi
+		# a server that dies keeps its window and output instead of vanishing
+		# (window id as target: a name like .dotfiles would parse as a pane)
+		tmux set-option -w -t "$win" remain-on-exit on
+		echo "started  $name"
+	done < <(find "$PROJECTS" -mindepth 1 -maxdepth 1 -type d | sort)
+}
+
+case ${1:-status} in
+up) up ;;
+status)
+	tmux list-windows -t "=$SESSION" -F '#W  #{?pane_dead,dead (exit #{pane_dead_status}),up}' 2>/dev/null ||
+		echo "no servers running (claude-remote up)"
+	;;
+attach)
+	if [ -n "${TMUX:-}" ]; then
+		tmux switch-client -t "=$SESSION"
+	else
+		tmux attach-session -t "=$SESSION"
+	fi
+	;;
+down)
+	# Ctrl-C each server and let it exit on its own: that is the clean
+	# shutdown that deregisters the folder in the app. Killing the session
+	# (SIGHUP) leaves the folders listed there until something expires them.
+	tmux has-session -t "=$SESSION" 2>/dev/null || {
+		echo "no servers running"
+		exit 0
+	}
+	for w in $(tmux list-windows -t "=$SESSION" -F '#{window_id}'); do
+		tmux send-keys -t "$w" C-c
+	done
+	for _ in $(seq 1 30); do # up to ~15s
+		tmux list-panes -s -t "=$SESSION" -F '#{pane_dead}' | grep -qx 0 || break
+		sleep 0.5
+	done
+	tmux list-panes -s -t "=$SESSION" -F '#{pane_dead}' | grep -qx 0 &&
+		echo "claude-remote: some servers did not stop on Ctrl-C, killing them" >&2
+	tmux kill-session -t "=$SESSION"
+	echo "stopped"
+	;;
+*)
+	echo "usage: claude-remote [up|status|attach|down]" >&2
+	exit 64
+	;;
+esac

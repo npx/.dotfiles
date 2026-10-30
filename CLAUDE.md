@@ -39,6 +39,16 @@ The repository includes `tmux-sessionizer` script (bound to Ctrl+F) that:
 - Creates or switches to tmux sessions named after selected directories
 - Usage: `tmux-sessionizer [optional-path]`
 
+### Remote Control (phone)
+Desktop only: the script is `wm-linux/.bin/claude-remote`, deliberately absent from the
+work macbook (`term/.bin` would land on both machines).
+`claude-remote up` starts one `claude remote-control` server per folder in
+`$PROJECTS`, each in a window of a detached tmux session `remote-control`, so the Claude
+mobile app can open sessions in them. Run it before leaving; bare `claude-remote` is
+status, plus `attach`/`down`.
+Nothing autostarts on purpose (a fresh `up` runs the current claude). A session already
+open locally is registered from inside it with `/remote-control` instead.
+
 ## Architecture
 
 ### Neovim Configuration
