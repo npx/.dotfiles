@@ -4,7 +4,7 @@
 # (claude-remote: phone access to the projects on this machine only).
 { config, lib, pkgs, ... }:
 {
-  home.file = import ./lib/stow.nix { inherit config lib; } [
+  home.file = (import ./lib/stow.nix { inherit config lib; }).link [
     "wm-linux"
   ];
 
