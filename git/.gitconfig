@@ -31,17 +31,28 @@
 	# LESS: git's default FRX + A (searches start after the top line; needed by ~/.lesskey j/k/arrow jumps)
 	review = "!f() { LESS=-FRXA git -c core.pager=delta log --stat -p --reverse \"${1:-main}..HEAD\"; }; f"
 
-	# git blg <branch> <branch> ...: show graph with only matching partial branch names
+	# git blg [log-opts] <branch> <branch> ...: show graph with only matching partial branch names
+	#         plus tags sitting exactly on the tips of those branches
 	blg = "!f() { \
 		cmd=\"git log --oneline --graph\"; \
 		for p in $@; \
 		do \
+			case $p in -*) cmd+=\" $p\"; continue;; esac; \
 			cmd+=\" --branches=*$p*\"; \
 			cmd+=\" --remotes=*$p*\"; \
 			cmd+=\" --decorate-refs=*$p*\"; \
+			for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do \
+				case ${r#refs/*/} in *$p*) \
+					for t in $(git tag --points-at $r); do \
+						cmd+=\" --decorate-refs=refs/tags/$t\"; \
+					done;; \
+				esac; \
+			done; \
 		done; \
 		$cmd; \
 	}; f"
+	# git blgs <branch> ...: like blg, but only the ref-carrying commits (plus merges), nothing in between
+	blgs = "!git blg --simplify-by-decoration"
 
 	# git lg: current branch + its upstream, main + its upstream, tags, stashes made on current branch
 	#         on main/master itself: all branches (git lg0)
