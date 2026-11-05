@@ -34,8 +34,7 @@ The bash profile defines several important environment variables and functions:
 - `d`: Interactive directory switching with fzf from dirs stack
 
 ### Tmux Session Management
-The repository includes `tmux-sessionizer` script (bound to Ctrl+F) that:
-- Lists directories from `$WORK`, `$WORK/Materials`, and `$PROJECTS`
+The repository includes `tmux-sessionizer` script (Ctrl+F in the shell, prefix+f inside tmux) that:
 - Creates or switches to tmux sessions named after selected directories
 - Usage: `tmux-sessionizer [optional-path]`
 

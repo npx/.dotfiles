@@ -1,34 +1,73 @@
 #!/usr/bin/env bash
+#
+# tmux-sessionizer: switch between running tmux sessions, or start one from a
+# project directory.
+#
+#   tmux-sessionizer        changer when ≥2 sessions run, otherwise picker
+#   tmux-sessionizer <dir>  create or switch to the session for <dir>
+#
+# Changer keys: a s d f g q w e r t  switch to the tagged session
+#               j/k or ↑/↓ + enter   switch to the highlighted session
+#               space                open the picker to start another one
+#               esc                  close
 
-if [[ $# -eq 1 ]]; then
-  selected=$1
-else
-  # only search roots that exist on this machine (work dirs are mac-only)
-  search_dirs=()
+hint_keys='asdfgqwert'
+fzf_colors='bg+:#3d484d,fg+:-1,gutter:-1,border:#859289,label:#d3c6aa,footer:#859289,prompt:#a7c080'
+fzf_frame=(--layout=reverse --highlight-line --no-scrollbar --border rounded --color "$fzf_colors")
+
+sessions() {  # oldest first
+  tmux list-sessions -F "#{session_created}"$'\t'"$1" 2>/dev/null | sort -n | cut -f2-
+}
+
+goto_session() {  # $1 session name, $2 start dir (used only when creating)
+  local name=$1 dir=$2
+  tmux has-session -t="$name" 2>/dev/null || tmux new-session -ds "$name" ${dir:+-c "$dir"}
+  if [[ -n $TMUX ]]; then
+    tmux switch-client -t "$name"
+  else
+    exec tmux attach-session -t "$name"
+  fi
+}
+
+goto_dir() { goto_session "$(basename "$1" | tr . _)" "$1"; }
+
+changer() {
+  local -a binds=()
+  local rows='' n=0 name row key
+  while IFS=$'\t' read -r name row; do   # rows: name \t display (fzf shows only the display)
+    key=${hint_keys:n:1}
+    [[ -n $key ]] && binds+=(--bind "$key:pos($(( n + 1 )))+accept")
+    rows+="$name"$'\t'"${key:- } $row"$'\n'
+    (( n++ ))
+  done < <(sessions "#{session_name}"$'\t'"#{?session_attached,●,○}  #{session_name}")
+
+  local out
+  out=$(fzf "${fzf_frame[@]}" "${binds[@]}" --margin 38%,35% --no-input --border-label ' sessions ' \
+    --footer '␣ new session   esc close' --bind 'j:down,k:up' --expect space \
+    --delimiter '\t' --with-nth 2 <<<"${rows%$'\n'}")
+  [[ -n $out ]] || return 0           # esc
+  local line; { read -r key; read -r line; } <<<"$out"
+  if [[ $key == space ]]; then picker; else goto_session "${line%%$'\t'*}"; fi
+}
+
+picker() {
+  local -a search_dirs=()
+  local dir selected
   for dir in "$WORK" "$WORK/Materials" "$WORK/Internal" "$PROJECTS"; do
     [[ -d $dir ]] && search_dirs+=("$dir")
   done
-  selected=$(find "${search_dirs[@]}" -mindepth 1 -maxdepth 1 -type d | fzf)
-fi
+  selected=$(find "${search_dirs[@]}" -mindepth 1 -maxdepth 1 -type d | sed "s|^$HOME/|~/|" |
+    fzf "${fzf_frame[@]}" --margin 25%,27% --prompt 'new session ❯ ')
+  [[ -n $selected ]] || return 0
+  goto_dir "${selected/#\~/$HOME}"
+}
 
-if [[ -z $selected ]]; then
-  exit 0
-fi
-
-selected_name=$(basename "$selected" | tr . _)
-tmux_running=$(pgrep tmux)
-
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-  tmux new-session -s $selected_name -c $selected
-  exit 0
-fi
-
-if ! tmux has-session -t=$selected_name 2>/dev/null; then
-  tmux new-session -ds $selected_name -c $selected
-fi
-
-if [[ -z $TMUX ]]; then
-  tmux attach-session -t $selected_name
-else
-  tmux switch-client -t $selected_name
-fi
+case $1 in
+  '')
+    if (( $(sessions | wc -l) >= 2 )); then changer; else picker; fi
+    ;;
+  *)
+    [[ -d $1 ]] || { echo "tmux-sessionizer: no such directory: $1" >&2; exit 1; }
+    goto_dir "$1"
+    ;;
+esac
